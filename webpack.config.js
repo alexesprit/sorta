@@ -10,6 +10,9 @@ const dotEnvConfig = dotenv.config();
 
 module.exports = {
 	entry: resolve('src', 'index.tsx'),
+	devServer: {
+		open: true,
+	},
 	mode: getBuildMode(),
 	module: {
 		rules: [
