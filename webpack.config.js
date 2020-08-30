@@ -1,12 +1,10 @@
 const path = require('path');
 
-const dotenv = require('dotenv');
-
 const { EnvironmentPlugin } = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
-const dotEnvConfig = dotenv.config();
+require('dotenv').config();
 
 module.exports = {
 	entry: resolve('src', 'index.tsx'),
@@ -34,7 +32,7 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: resolve('src', 'index.html'),
 		}),
-		new EnvironmentPlugin(Object.keys(dotEnvConfig.parsed || {})),
+		new EnvironmentPlugin(['SPOTIFY_CLIENT_ID', 'SPOTIFY_REDIRECT_URI']),
 	],
 	resolve: {
 		extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
