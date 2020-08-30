@@ -12,6 +12,9 @@ This tool sorts _all_ your playlists automatically with these sort rules. For mo
 
 # Run the dev server
 > npm start
+
+# Lint code
+> npm run lint
 ```
 
 ## License

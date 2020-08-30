@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server",
+    "lint": "eslint .",
     "test": "jest",
     "build": "webpack",
     "prod": "cross-env NODE_ENV=production webpack"
@@ -45,16 +46,11 @@
     "webpack-dev-server": "^3.11.0"
   },
   "eslintConfig": {
-    "extends": [
-      "web-scrobbler/typescript",
-      "plugin:react/recommended"
-    ],
+    "extends": ["web-scrobbler/typescript", "plugin:react/recommended"],
     "parserOptions": {
       "sourceType": "module"
     },
-    "plugins": [
-      "react"
-    ],
+    "plugins": ["react"],
     "settings": {
       "react": {
         "version": "detect"
