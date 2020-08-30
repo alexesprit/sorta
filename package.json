@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Tool for sorting your Spotify playlists using custom sort rules",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "start": "webpack-dev-server",
     "lint": "eslint .",
