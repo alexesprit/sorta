@@ -41,8 +41,8 @@ export function Header({ userId }: HeaderProps): JSX.Element {
 				<SortaBlock>
 					<SortaName>Sorta</SortaName>
 					<SortaDescription>
-						A tool for sorting your Spotify playlists using custom
-						sort rules.
+						A web application for sorting your Spotify playlists
+						using custom sort rules.
 					</SortaDescription>
 				</SortaBlock>
 

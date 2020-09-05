@@ -1,8 +1,8 @@
 # sorta
 
-> Tool for sorting your Spotify playlists using custom sort rules
+> Web application for sorting your Spotify playlists using custom sort rules
 
-This tool sorts _all_ your playlists automatically with these sort rules. For more complex cases consider using other tools, e.g. [Sortify][sortify].
+This application sorts _all_ your playlists automatically with these sort rules. For more complex cases consider using other applications, e.g. [Sortify][sortify].
 
 ## Development
 
