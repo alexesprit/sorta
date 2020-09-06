@@ -16,8 +16,8 @@ const SortaBlock = styled.div`
 `;
 
 const SortaName = styled.div`
-	font-weight: 600;
 	font-size: 4rem;
+	font-weight: 600;
 `;
 
 const SortaDescription = styled.div`

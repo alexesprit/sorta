@@ -27,7 +27,7 @@ const IconContainer = styled.div`
 `;
 
 const ErrorIconContainer = styled(IconContainer)`
-	color: #FF4F62;
+	color: #ff4f62;
 `;
 const ReadyIconContainer = styled(IconContainer)`
 	color: #586069;
