@@ -80,7 +80,7 @@ function getReleaseDate(track: PlaylistTrack): string {
 		const albumInfo = track.track.album;
 
 		if ('release_date' in albumInfo) {
-			return (<SpotifyApi.AlbumObjectFull>albumInfo).release_date;
+			return (albumInfo as SpotifyApi.AlbumObjectFull).release_date;
 		}
 	}
 

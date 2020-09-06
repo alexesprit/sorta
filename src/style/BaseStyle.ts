@@ -2,9 +2,9 @@ import styled from 'styled-components';
 
 export const Button = styled.button`
 	background-color: #1db954;
-	color: #fff;
-	border-radius: 2rem;
 	border: none;
+	border-radius: 2rem;
+	color: #fff;
 	font-weight: 600;
 	padding: 1rem 2rem;
 	text-decoration: none;
@@ -20,8 +20,8 @@ export const Button = styled.button`
 `;
 
 export const ContentWrapper = styled.div`
-	max-width: 576px;
 	margin: auto;
+	max-width: 576px;
 	padding: 2rem;
 `;
 

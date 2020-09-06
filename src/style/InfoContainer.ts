@@ -4,8 +4,8 @@ const foregroundColor = '#586069';
 
 export const InfoContainer = styled.div`
 	background-color: #f3f3f3;
-	color: ${foregroundColor};
 	border: 1px solid #777;
+	color: ${foregroundColor};
 	padding: 1rem 2rem;
 `;
 
