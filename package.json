@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "webpack-dev-server",
-    "lint": "eslint **/*.js **/*.ts && stylelint **/*.js **/*.ts",
+    "lint": "eslint \"**/*.{js,ts,tsx}\" && stylelint **/*.{js,ts,tsx}",
     "test": "jest",
     "build": "webpack",
     "prod": "cross-env NODE_ENV=production webpack"
