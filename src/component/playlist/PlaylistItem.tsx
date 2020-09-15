@@ -41,13 +41,26 @@ const SkippedIconContainer = styled(IconContainer)`
 	color: #586069;
 `;
 
+const PlaylistLink = styled.a`
+	color: #000;
+
+	:not(:hover) {
+		text-decoration: none;
+	}
+`;
+
 export function PlaylistItem({ playlist }: PlaylistItemProps): JSX.Element {
 	const statusIconContainer = getStatusIconContainer(playlist.status);
+	const playlistLabel = (
+		<PlaylistLink href={playlist.href} rel="noreferrer" target="_blank">
+			{playlist.name}
+		</PlaylistLink>
+	);
 
 	return (
 		<PlaylistItemContainer>
 			{statusIconContainer}
-			{playlist.name}
+			{playlistLabel}
 		</PlaylistItemContainer>
 	);
 }

@@ -51,9 +51,9 @@ export function useSortPlaylists(
 
 			setPlaylists((prevValue) => {
 				return prevValue.map((playlist) => {
-					const { id, name } = playlist;
+					const { id } = playlist;
 					if (playlistToSortId === id) {
-						return { id, name, status };
+						return { ...playlist, status };
 					}
 
 					return playlist;
@@ -74,20 +74,11 @@ function usePlaylists(): [Playlist[], Dispatch<SetStateAction<Playlist[]>>] {
 		let isResultIgnored = false;
 
 		async function loadPlaylists() {
-			const myId = await getMyId();
-			const spotifyPlaylists = await getMyPlaylists();
-
-			const playlists: Playlist[] = spotifyPlaylists
-				.filter(({ owner }) => owner.id === myId)
-				.map(({ id, name }) => {
-					return { id, name, status: 'ready' };
-				});
-
 			if (isResultIgnored) {
 				return;
 			}
 
-			setPlaylists(playlists);
+			setPlaylists(await fetchPlaylists());
 		}
 
 		loadPlaylists();
@@ -98,4 +89,24 @@ function usePlaylists(): [Playlist[], Dispatch<SetStateAction<Playlist[]>>] {
 	}, []);
 
 	return [playlists, setPlaylists];
+}
+
+async function fetchPlaylists(): Promise<Playlist[]> {
+	const myId = await getMyId();
+	const spotifyPlaylists = await getMyPlaylists();
+
+	/* eslint-disable camelcase */
+	return spotifyPlaylists
+		.filter(({ owner }) => owner.id === myId)
+		.map((playlist) => {
+			const { id, name, external_urls } = playlist;
+
+			return {
+				id,
+				name,
+				href: external_urls.spotify,
+				status: 'ready',
+			};
+		});
+	/* eslint-enable camelcase */
 }
