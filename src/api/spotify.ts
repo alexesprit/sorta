@@ -9,6 +9,8 @@ const scopes =
 	'playlist-read-private playlist-modify-private playlist-modify-public';
 const redirectUri = process.env.SPOTIFY_REDIRECT_URI;
 
+const maxTracksToSave = 100;
+
 export function authorize(): void {
 	const url = `https://accounts.spotify.com/authorize?client_id=${spotifyClientId}&response_type=token&scope=${encodeURIComponent(
 		scopes
@@ -33,9 +35,22 @@ export async function getMyPlaylists(): Promise<
 export async function getPlaylistTracks(
 	playlistId: string
 ): Promise<SpotifyApi.PlaylistTrackObject[]> {
-	const { items } = await spotifyClient.getPlaylistTracks(playlistId);
+	const tracks: SpotifyApi.PlaylistTrackObject[] = [];
 
-	return items;
+	let limit = 0;
+	let offset = 0;
+	let total = 0;
+
+	do {
+		const response = await spotifyClient.getPlaylistTracks(playlistId, {
+			offset: offset + limit,
+		});
+		({ limit, offset, total } = response);
+
+		tracks.push(...response.items);
+	} while (total > limit + offset);
+
+	return tracks;
 }
 
 export async function setPlaylistTracks(
@@ -44,7 +59,18 @@ export async function setPlaylistTracks(
 ): Promise<void> {
 	const trackIds = tracks.map((track) => `spotify:track:${track.track.id}`);
 
-	await spotifyClient.replaceTracksInPlaylist(playlistId, trackIds);
+	for (let offset = 0; offset < trackIds.length; offset += maxTracksToSave) {
+		const tracksSlice = trackIds.slice(offset, offset + maxTracksToSave);
+
+		if (offset === 0) {
+			await spotifyClient.replaceTracksInPlaylist(
+				playlistId,
+				tracksSlice
+			);
+		} else {
+			await spotifyClient.addTracksToPlaylist(playlistId, tracksSlice);
+		}
+	}
 }
 
 export async function getMyId(): Promise<string> {
