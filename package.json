@@ -11,6 +11,7 @@
   "scripts": {
     "start": "webpack-dev-server",
     "lint": "eslint . && stylelint **/*.{js,ts,tsx}",
+    "check-format": "prettier --check .",
     "test": "jest",
     "build": "webpack",
     "prod": "cross-env NODE_ENV=production webpack"
