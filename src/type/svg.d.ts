@@ -2,7 +2,7 @@
  * Type declarations for `svg-sprite-loader`.
  */
 
- declare module '*.svg' {
+declare module '*.svg' {
 	interface BrowserSpriteSymbol {
 		content: string;
 		id: string;
