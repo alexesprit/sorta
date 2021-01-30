@@ -1,7 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import appIcon from '@/icon/icon-no-borders.svg';
+
 import { Button, ContentWrapper } from '@/style/BaseStyle';
+import { SpriteIcon } from '@/component/shared/SpriteIcon';
 
 import { authorize } from '@/api/spotify';
 
@@ -29,11 +32,25 @@ const SortaDescription = styled.div`
 	font-size: 1.3rem;
 `;
 
+const IconContainer = styled.div`
+	display: inline-block;
+	height: 12rem;
+	width: 12rem;
+
+	@media (max-width: 576px) {
+		height: 8rem;
+		width: 8rem;
+	}
+`;
+
 export function Intro(): JSX.Element {
 	return (
 		<StyledHeader>
 			<ContentWrapper>
 				<SortaBlock>
+					<IconContainer>
+						<SpriteIcon icon={appIcon} />
+					</IconContainer>
 					<SortaName>Sorta</SortaName>
 					<SortaDescription>
 						A web application for sorting your Spotify playlists
