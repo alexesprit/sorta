@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { InfoContainer, InfoHeader, InfoText } from '@/style/InfoContainer';
+import { InfoHeader, InfoText } from '@/style/InfoContainer';
 
 import {
 	getSortKeyName,
@@ -13,9 +13,10 @@ import {
 import { SortRulesList } from './SortRulesList';
 
 const SortKeyCode = styled.code`
-	background: #e5e5e5;
-	border: 1px solid #a5a5a5;
-	padding: 0.1rem;
+	background: rgba(0, 0, 0, 8%);
+	border: 1px solid rgba(0, 0, 0, 15%);
+	border-radius: 0.2rem;
+	padding: 0.2rem;
 `;
 
 const SortRuleExampleItem = styled.li`
@@ -28,6 +29,12 @@ const SortRulesSubBlock = styled.div`
 	&:not(:last-child) {
 		margin-bottom: 1rem;
 	}
+`;
+
+const HelpSummary = styled.summary`
+	cursor: pointer;
+	font-weight: 600;
+	outline: none;
 `;
 
 const rawSortRulesExamples = ['artist album title', 'artist date/desc'];
@@ -57,7 +64,8 @@ export function SortRulesTips(): JSX.Element {
 	);
 
 	return (
-		<InfoContainer>
+		<details>
+			<HelpSummary>Help</HelpSummary>
 			<SortRulesSubBlock>
 				<InfoHeader>Sort keys</InfoHeader>
 				<InfoText>
@@ -78,7 +86,7 @@ export function SortRulesTips(): JSX.Element {
 					<ul>{rawSortRulesItems}</ul>
 				</InfoText>
 			</SortRulesSubBlock>
-		</InfoContainer>
+		</details>
 	);
 }
 

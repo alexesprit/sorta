@@ -5,7 +5,7 @@ type URLParams = Record<string, string>;
 export function getTokenFromLocation(): string {
 	const params = parseLocationParams();
 
-	return params[accessTokenParam];
+	return params[accessTokenParam] ?? null;
 }
 
 function parseLocationParams(): URLParams {

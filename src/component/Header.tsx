@@ -1,30 +1,26 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Button, ContentWrapper } from '@/style/BaseStyle';
-
-import { authorize } from '@/api/spotify';
+import { ContentWrapper } from '@/style/BaseStyle';
 
 const StyledHeader = styled.header`
 	background-color: #070707;
 	color: #fff;
-	text-align: center;
+	padding: 0.5rem 2rem;
 `;
 
-const SortaBlock = styled.div`
-	margin-bottom: 1.5rem;
+const HeaderContainer = styled(ContentWrapper)`
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
 `;
 
-const SortaName = styled.div`
-	font-size: 4rem;
-	font-weight: 600;
+const SortaName = styled.span`
+	font-size: 2rem;
+	font-weight: 900;
 `;
 
-const SortaDescription = styled.div`
-	font-size: 1rem;
-`;
-
-const SignedInLabel = styled.div`
+const UserName = styled.span`
 	font-size: 1rem;
 `;
 
@@ -33,30 +29,12 @@ interface HeaderProps {
 }
 
 export function Header({ userId }: HeaderProps): JSX.Element {
-	const isSignedIn = userId !== null;
-
 	return (
 		<StyledHeader>
-			<ContentWrapper>
-				<SortaBlock>
-					<SortaName>Sorta</SortaName>
-					<SortaDescription>
-						A web application for sorting your Spotify playlists
-						using custom sort rules.
-					</SortaDescription>
-				</SortaBlock>
-
-				{!isSignedIn && (
-					<Button onClick={() => authorize()}>
-						Sign in to Spotify
-					</Button>
-				)}
-				{isSignedIn && (
-					<SignedInLabel>
-						You are signed in as {userId}.
-					</SignedInLabel>
-				)}
-			</ContentWrapper>
+			<HeaderContainer>
+				<SortaName>Sorta</SortaName>
+				<UserName>{userId}</UserName>
+			</HeaderContainer>
 		</StyledHeader>
 	);
 }

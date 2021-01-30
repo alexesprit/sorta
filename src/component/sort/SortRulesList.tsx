@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { getSortRuleDescription, SortRule } from '@/util/sortRules';
 
 const SortRulesOrderedList = styled.ol`
-	padding-left: 1.5rem;
+	padding-left: 1rem;
 `;
 
 const SortRulesItem = styled.li`

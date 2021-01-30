@@ -54,11 +54,16 @@
     "webpack-dev-server": "^3.11.0"
   },
   "eslintConfig": {
-    "extends": ["web-scrobbler/typescript", "plugin:react/recommended"],
+    "extends": [
+      "web-scrobbler/typescript",
+      "plugin:react/recommended"
+    ],
     "parserOptions": {
       "sourceType": "module"
     },
-    "plugins": ["react"],
+    "plugins": [
+      "react"
+    ],
     "settings": {
       "react": {
         "version": "detect"
@@ -67,7 +72,9 @@
   },
   "prettier": "prettier-config-web-scrobbler",
   "stylelint": {
-    "processors": ["stylelint-processor-styled-components"],
+    "processors": [
+      "stylelint-processor-styled-components"
+    ],
     "extends": "stylelint-config-web-scrobbler"
   }
 }
