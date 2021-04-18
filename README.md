@@ -4,7 +4,7 @@
 
 This application sorts _all_ your playlists automatically with these sort rules. For more complex cases consider using other applications, e.g. [Sortify][sortify].
 
-An online instance is available at [usesorta.vercel.app][usesorta].
+An online instance is available at [sorta.alexesprit.com][usesorta].
 
 ## Development
 
@@ -24,4 +24,4 @@ An online instance is available at [usesorta.vercel.app][usesorta].
 Licensed under the [MIT License](./LICENSE).
 
 [sortify]: https://sortspotifyplaylists.com/
-[usesorta]: https://usesorta.vercel.app/
+[usesorta]: https://sorta.alexesprit.com/
