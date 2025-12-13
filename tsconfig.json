@@ -2,15 +2,27 @@
   "compilerOptions": {
     "baseUrl": ".",
     "esModuleInterop": true,
-    "jsx": "react",
-    "module": "ES2020",
-    "moduleResolution": "Node",
-    "outDir": "build",
+    "jsx": "react-jsx",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "dist",
     "paths": {
       "@/*": ["src/*"]
     },
+    "skipLibCheck": true,
     "sourceMap": true,
-    "target": "ES2017"
+    "target": "ES2020",
+    "types": ["vite/client", "vitest/globals", "node"],
+
+    // TypeScript 5 strict mode flags
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src/**/*"]
 }
