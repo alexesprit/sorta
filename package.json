@@ -9,13 +9,13 @@
     "url": "https://github.com/alexesprit/sorta"
   },
   "scripts": {
-    "start": "webpack-dev-server",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack-dev-server",
     "lint": "eslint . && stylelint **/*.{js,ts,tsx}",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
-    "build": "webpack",
-    "prod": "cross-env NODE_ENV=production webpack"
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "prod": "NODE_OPTIONS=--openssl-legacy-provider cross-env NODE_ENV=production webpack"
   },
   "keywords": [],
   "author": "",
