@@ -15,11 +15,6 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src'),
       },
     },
-    esbuild: {
-      // Use legacy JSX transform for React 16
-      jsxFactory: 'React.createElement',
-      jsxFragment: 'React.Fragment',
-    },
     // Vite automatically exposes environment variables that start with SPOTIFY_
     // No need for manual definition as Vite handles it
     server: {
@@ -29,9 +24,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       outDir: 'dist',
-      rollupOptions: {
-        external: ['react/jsx-runtime', 'react/jsx-dev-runtime'],
-      },
     },
     // Vitest configuration
     test: {
