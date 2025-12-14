@@ -13,14 +13,6 @@ An online instance is available at [sorta.alexesprit.com][usesorta].
 - **Flexible Ordering**: Sort in ascending or descending order
 - **Spotify Integration**: Uses Spotify's OAuth 2.0 PKCE flow for secure authentication
 
-## Sort Rules Format
-
-Sort rules use the format: `key/order key/order ...` (space-separated)
-
-- **Keys**: `artist`, `album`, `release_date`, `title`
-- **Orders**: `asc` (default), `desc`
-- **Example**: `artist release_date/desc` (sort by artist ascending, then release date descending)
-
 ## Development
 
 ```bash
