@@ -9,7 +9,7 @@ import {
   refreshAccessToken,
   setAccessToken,
 } from '@/shared/api/spotify'
-import { useUserId } from '@/shared/hooks/useUserId'
+import { useUsername } from '@/shared/hooks/useUsername'
 
 // Helper to create mock callback params with defaults
 const mockCallbackParams = (
@@ -32,8 +32,8 @@ vi.mock('@/features/auth/utils/callback', () => ({
   getCallbackParams: vi.fn(),
 }))
 
-vi.mock('@/shared/hooks/useUserId', () => ({
-  useUserId: vi.fn(),
+vi.mock('@/shared/hooks/useUsername', () => ({
+  useUsername: vi.fn(),
 }))
 
 // Mock components
@@ -42,8 +42,8 @@ vi.mock('@/features/auth/components/IntroScreen', () => ({
 }))
 
 vi.mock('@/features/layout/components/Header', () => ({
-  Header: ({ userId }: { userId: string | null }) => (
-    <div>Header: {userId}</div>
+  Header: ({ username }: { username: string | null }) => (
+    <div>Header: {username}</div>
   ),
 }))
 
@@ -111,7 +111,7 @@ describe('App', () => {
       state: null,
       error: null,
     })
-    vi.mocked(useUserId).mockReturnValue(null)
+    vi.mocked(useUsername).mockReturnValue(null)
   })
 
   afterEach(() => {
@@ -172,14 +172,14 @@ describe('App', () => {
       localStorageMock.spotify_access_token = 'test-token'
       localStorageMock.spotify_refresh_token = 'test-refresh-token'
       localStorageMock.spotify_token_expiry = (Date.now() + 3600000).toString() // 1 hour from now
-      vi.mocked(useUserId).mockReturnValue('user123')
+      vi.mocked(useUsername).mockReturnValue('Test User')
 
       await act(async () => {
         render(<App />)
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Header: user123')).toBeInTheDocument()
+        expect(screen.getByText('Header: Test User')).toBeInTheDocument()
         expect(screen.getByText('MainContent')).toBeInTheDocument()
       })
     })

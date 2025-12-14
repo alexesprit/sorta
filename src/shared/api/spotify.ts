@@ -177,3 +177,18 @@ export async function getMyId(): Promise<string> {
 
   return id
 }
+
+export async function getUsername(): Promise<string> {
+  const cachedUsername = localStorage.getItem(STORAGE_KEYS.SPOTIFY_USERNAME)
+
+  if (cachedUsername) {
+    return cachedUsername
+  }
+
+  const { display_name } = await spotifyClient.getMe()
+  const username = display_name || 'User'
+
+  localStorage.setItem(STORAGE_KEYS.SPOTIFY_USERNAME, username)
+
+  return username
+}

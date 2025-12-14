@@ -111,7 +111,9 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
       return (
         <div className="flex items-center gap-2">
           <XCircle className="w-4 h-4 text-red-500" />
-          <span className="text-xs text-red-500 hidden sm:inline">{m.error()}</span>
+          <span className="text-xs text-red-500 hidden sm:inline">
+            {m.error()}
+          </span>
         </div>
       )
     default:

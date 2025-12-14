@@ -10,19 +10,19 @@ import {
 } from '@/shared/components/ui/dropdown-menu'
 
 interface HeaderProps {
-  userId: string | null
+  username: string | null
 }
 
-export function Header({ userId }: HeaderProps): JSX.Element {
+export function Header({ username }: HeaderProps): JSX.Element {
   const { logout } = useLogout()
   const currentLocale = getLocale()
 
-  // Extract initials from userId for avatar
-  const getInitials = (userId: string | null): string => {
-    if (!userId) {
+  // Extract initials from username for avatar
+  const getInitials = (username: string | null): string => {
+    if (!username) {
       return ''
     }
-    return userId.charAt(0).toUpperCase()
+    return username.charAt(0).toUpperCase()
   }
 
   return (
@@ -64,11 +64,11 @@ export function Header({ userId }: HeaderProps): JSX.Element {
               >
                 <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center group-hover:border-zinc-600">
                   <span className="font-bold text-xs text-zinc-400">
-                    {getInitials(userId)}
+                    {getInitials(username)}
                   </span>
                 </div>
                 <span className="text-sm font-medium text-zinc-300 hidden sm:block group-hover:text-zinc-100">
-                  {userId || m.loading()}
+                  {username || m.loading()}
                 </span>
               </button>
             </DropdownMenuTrigger>

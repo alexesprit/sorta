@@ -9,7 +9,7 @@ import { MainContent } from '@/features/layout/components/MainContent'
 import * as m from '@/paraglide/messages'
 import { setAccessToken } from '@/shared/api/spotify'
 import { Button } from '@/shared/components/ui/button'
-import { useUserId } from '@/shared/hooks/useUserId'
+import { useUsername } from '@/shared/hooks/useUsername'
 import '@/features/layout/styles.css'
 
 export function App(): JSX.Element {
@@ -39,7 +39,7 @@ export function App(): JSX.Element {
   })
 
   const isSignedIn = accessToken !== null
-  const userId = useUserId(isSignedIn)
+  const username = useUsername(isSignedIn)
 
   if (isLoading) {
     return <div>{m.loading()}</div>
@@ -61,7 +61,7 @@ export function App(): JSX.Element {
     <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-spotify selection:text-black flex flex-col">
       {isSignedIn && (
         <>
-          <Header userId={userId} />
+          <Header username={username} />
           <MainContent />
         </>
       )}

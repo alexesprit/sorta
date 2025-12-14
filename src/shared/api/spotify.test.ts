@@ -6,6 +6,7 @@ import {
   getMyId,
   getMyPlaylists,
   getPlaylistTracks,
+  getUsername,
   refreshAccessToken,
   setAccessToken,
   setPlaylistTracks,
@@ -471,6 +472,63 @@ describe('spotify API', () => {
 
         expect(result).toBe('test-user-id')
         expect(mockGetMe).toHaveBeenCalled()
+      })
+    })
+
+    describe('getUsername()', () => {
+      test('should return cached username if available', async () => {
+        localStorage.setItem(STORAGE_KEYS.SPOTIFY_USERNAME, 'Cached User')
+
+        const result = await getUsername()
+
+        expect(result).toBe('Cached User')
+        expect(mockGetMe).not.toHaveBeenCalled()
+      })
+
+      test('should fetch and cache username from API if not cached', async () => {
+        mockGetMe.mockResolvedValueOnce({
+          id: 'test-user-id',
+          display_name: 'New User',
+        })
+
+        const result = await getUsername()
+
+        expect(result).toBe('New User')
+        expect(mockGetMe).toHaveBeenCalled()
+        expect(localStorage.setItem).toHaveBeenCalledWith(
+          STORAGE_KEYS.SPOTIFY_USERNAME,
+          'New User',
+        )
+      })
+
+      test('should use fallback username if display_name is null', async () => {
+        mockGetMe.mockResolvedValueOnce({
+          id: 'test-user-id',
+          display_name: null,
+        })
+
+        const result = await getUsername()
+
+        expect(result).toBe('User')
+        expect(localStorage.setItem).toHaveBeenCalledWith(
+          STORAGE_KEYS.SPOTIFY_USERNAME,
+          'User',
+        )
+      })
+
+      test('should use fallback username if display_name is undefined', async () => {
+        mockGetMe.mockResolvedValueOnce({
+          id: 'test-user-id',
+          display_name: undefined,
+        })
+
+        const result = await getUsername()
+
+        expect(result).toBe('User')
+        expect(localStorage.setItem).toHaveBeenCalledWith(
+          STORAGE_KEYS.SPOTIFY_USERNAME,
+          'User',
+        )
       })
     })
 
