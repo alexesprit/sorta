@@ -1,4 +1,5 @@
 import { ListFilter } from 'lucide-react'
+import * as m from '@/paraglide/messages'
 import { authorize } from '@/shared/api/spotify'
 import { Button } from '@/shared/components/ui/button'
 
@@ -12,18 +13,15 @@ export function IntroScreen(): JSX.Element {
               <ListFilter className="w-12 h-12 md:w-16 md:h-16 text-black" />
             </div>
           </div>
-          <h1 className="text-6xl font-black mt-4 mb-2">Sorta</h1>
-          <p className="text-xl text-zinc-300">
-            A web application for sorting your Spotify playlists using custom
-            sort rules.
-          </p>
+          <h1 className="text-6xl font-black mt-4 mb-2">{m.app_name()}</h1>
+          <p className="text-xl text-zinc-300">{m.app_description()}</p>
         </div>
 
         <Button
           onClick={() => authorize()}
           className="bg-spotify hover:bg-spotify-hover text-black font-bold text-base px-8 py-3 h-12 rounded-lg shadow-lg shadow-green-900/20 transition-all active:scale-[0.98]"
         >
-          Sign in to Spotify
+          {m.sign_in_to_spotify()}
         </Button>
       </div>
     </div>

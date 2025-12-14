@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 
@@ -9,7 +10,13 @@ export default defineConfig(({ mode }) => {
   const _env = loadEnv(mode, process.cwd(), '')
 
   return {
-    plugins: [react()],
+    plugins: [
+      paraglideVitePlugin({
+        project: './project.inlang',
+        outdir: './src/paraglide',
+      }),
+      react(),
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),

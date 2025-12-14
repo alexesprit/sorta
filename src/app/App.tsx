@@ -6,6 +6,7 @@ import type { TokenData } from '@/features/auth/services/tokenStorage'
 import { tokenStorage } from '@/features/auth/services/tokenStorage'
 import { Header } from '@/features/layout/components/Header'
 import { MainContent } from '@/features/layout/components/MainContent'
+import * as m from '@/paraglide/messages'
 import { setAccessToken } from '@/shared/api/spotify'
 import { Button } from '@/shared/components/ui/button'
 import { useUserId } from '@/shared/hooks/useUserId'
@@ -41,15 +42,17 @@ export function App(): JSX.Element {
   const userId = useUserId(isSignedIn)
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div>{m.loading()}</div>
   }
 
   if (authError) {
     return (
       <div>
-        Authentication error: {authError}
+        {m.authentication_error()} {authError}
         <br />
-        <Button onClick={() => window.location.reload()}>Try again</Button>
+        <Button onClick={() => window.location.reload()}>
+          {m.try_again()}
+        </Button>
       </div>
     )
   }

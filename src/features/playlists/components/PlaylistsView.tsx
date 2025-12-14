@@ -6,6 +6,7 @@ import { PlaylistSkeleton } from '@/features/playlists/components/PlaylistSkelet
 import { usePlaylistSelection } from '@/features/playlists/hooks/usePlaylistSelection'
 import type { Playlist } from '@/features/playlists/models/Playlist'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
+import * as m from '@/paraglide/messages'
 import { Button } from '@/shared/components/ui/button'
 import { EmptyState } from '@/shared/components/ui/empty-state'
 import { Input } from '@/shared/components/ui/input'
@@ -47,23 +48,23 @@ export function PlaylistsView({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Music className="w-4 h-4 text-spotify" />
-            Your Playlists
+            {m.your_playlists()}
           </h2>
           <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-50 border border-zinc-700">
-            {selectedCount} selected
+            {selectedCount} {m.selected()}
           </span>
         </div>
 
         {/* Search */}
         <div className="relative group">
           <label htmlFor={searchId} className="sr-only">
-            Filter playlists
+            {m.filter_playlists()}
           </label>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-spotify transition-colors z-10" />
           <Input
             id={searchId}
             type="text"
-            placeholder="Filter playlists..."
+            placeholder={m.filter_playlists_placeholder()}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-9"
@@ -90,7 +91,7 @@ export function PlaylistsView({
             disabled={isProcessing}
             className="text-sm text-zinc-400 cursor-pointer select-none hover:text-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Select All
+            {m.select_all()}
           </button>
         </div>
       </div>
@@ -115,15 +116,15 @@ export function PlaylistsView({
           ) : (
             <EmptyState
               icon={Search}
-              title="No playlists match your search"
-              description="Try adjusting your search terms"
+              title={m.no_playlists_match_search()}
+              description={m.try_adjusting_search_terms()}
             />
           )
         ) : (
           <EmptyState
             icon={Music}
-            title="No playlists loaded"
-            description="Connect your Spotify account to get started"
+            title={m.no_playlists_loaded()}
+            description={m.connect_spotify_account()}
           />
         )}
       </div>
@@ -139,10 +140,13 @@ export function PlaylistsView({
             {isProcessing ? (
               <>
                 <Loader2 className="animate-spin h-4 w-4" />
-                Sorting...
+                {m.sorting()}
               </>
             ) : (
-              `Sort ${selectedCount} Playlist${selectedCount !== 1 ? 's' : ''}`
+              m.sort_playlists({
+                count: selectedCount,
+                plural: selectedCount !== 1 ? 's' : '',
+              })
             )}
           </Button>
         </div>

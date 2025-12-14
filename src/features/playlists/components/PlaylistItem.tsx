@@ -9,6 +9,7 @@ import type {
   Playlist,
   PlaylistStatus,
 } from '@/features/playlists/models/Playlist'
+import * as m from '@/paraglide/messages'
 
 interface PlaylistItemProps {
   playlist: Playlist
@@ -63,7 +64,10 @@ export function PlaylistItem({
             {playlist.name}
           </span>
           <span className="text-xs text-zinc-500">
-            {playlist.tracks} tracks
+            {m.track_count({
+              count: playlist.tracks,
+              plural: playlist.tracks !== 1 ? 's' : '',
+            })}
           </span>
         </div>
       </div>
@@ -81,7 +85,7 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-spotify" />
           <span className="text-xs text-zinc-400 hidden sm:inline">
-            Sorting...
+            {m.sorting()}
           </span>
         </div>
       )
@@ -90,7 +94,7 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-spotify" />
           <span className="text-xs text-spotify font-medium hidden sm:inline">
-            Sorted
+            {m.sorted()}
           </span>
         </div>
       )
@@ -99,7 +103,7 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
         <div className="flex items-center gap-2">
           <MinusCircle className="w-4 h-4 text-zinc-500" />
           <span className="text-xs text-zinc-500 hidden sm:inline">
-            Unchanged
+            {m.unchanged()}
           </span>
         </div>
       )
@@ -107,7 +111,7 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
       return (
         <div className="flex items-center gap-2">
           <XCircle className="w-4 h-4 text-red-500" />
-          <span className="text-xs text-red-500 hidden sm:inline">Error</span>
+          <span className="text-xs text-red-500 hidden sm:inline">{m.error()}</span>
         </div>
       )
     default:

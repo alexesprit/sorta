@@ -17,6 +17,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { ArrowDown, ArrowUp, GripVertical, ListFilter, X } from 'lucide-react'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
 import { getSortKeyName } from '@/features/sorting/utils/sortRules'
+import * as m from '@/paraglide/messages'
 import { EmptyState } from '@/shared/components/ui/empty-state'
 
 interface SortRulesListProps {
@@ -87,16 +88,16 @@ function SortableRuleItem({
           <button
             type="button"
             onClick={() => onToggleOrder(index)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-zinc-800 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-zinc-800 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer"
           >
             {isAscending ? (
               <>
-                Ascending
+                {m.ascending()}
                 <ArrowUp className="w-3 h-3" />
               </>
             ) : (
               <>
-                Descending
+                {m.descending()}
                 <ArrowDown className="w-3 h-3" />
               </>
             )}
@@ -132,8 +133,8 @@ export function SortRulesList({
     return (
       <EmptyState
         icon={ListFilter}
-        title="No rules applied yet"
-        description="Add sorting rules to organize your playlists"
+        title={m.no_rules_applied()}
+        description={m.add_sorting_rules()}
       />
     )
   }

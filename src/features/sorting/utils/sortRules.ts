@@ -13,14 +13,16 @@ type SortOrder = 'asc' | 'desc'
  */
 export type SortRule = [SortKey, SortOrder]
 
+import * as m from '@/paraglide/messages'
+
 /**
  * Display labels for sort keys.
  */
 export const SORT_KEY_LABELS: Record<SortKey, string> = {
-  artist: 'Artist',
-  album: 'Album',
-  release_date: 'Release Date',
-  title: 'Track Title',
+  artist: m.artist(),
+  album: m.album(),
+  release_date: m.release_date(),
+  title: m.track_title(),
 }
 
 /**
@@ -48,6 +50,24 @@ export function convertToRawSortRules(sortRules: SortRule[]): string {
 }
 
 /**
+ * Get the display label for a sort key using Paraglide messages.
+ */
+function getSortKeyLabel(sortKey: SortKey): string {
+  switch (sortKey) {
+    case 'artist':
+      return m.artist()
+    case 'album':
+      return m.album()
+    case 'release_date':
+      return m.release_date()
+    case 'title':
+      return m.track_title()
+    default:
+      return sortKey
+  }
+}
+
+/**
  * Return a display name for the given sort key.
  *
  * @param sortKey Sort key
@@ -55,7 +75,7 @@ export function convertToRawSortRules(sortRules: SortRule[]): string {
  * @return Display name of the sort key
  */
 export function getSortKeyName(sortKey: SortKey): string {
-  return SORT_KEY_LABELS[sortKey]
+  return getSortKeyLabel(sortKey)
 }
 
 /* Internal */

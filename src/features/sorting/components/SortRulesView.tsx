@@ -1,10 +1,12 @@
 import { Plus } from 'lucide-react'
 import { SortRulesList } from '@/features/sorting/components/SortRulesList'
 import {
+  getSortKeyName,
   SORT_KEY_LABELS,
   type SortKey,
   type SortRule,
 } from '@/features/sorting/utils/sortRules'
+import * as m from '@/paraglide/messages'
 
 interface SortRulesViewProps {
   sortRules: SortRule[]
@@ -13,7 +15,7 @@ interface SortRulesViewProps {
 
 const availableCriteria: Array<{ key: SortKey; label: string }> = (
   Object.entries(SORT_KEY_LABELS) as Array<[SortKey, string]>
-).map(([key, label]) => ({ key, label }))
+).map(([key]) => ({ key, label: getSortKeyName(key) }))
 
 export function SortRulesView({
   sortRules,
@@ -61,10 +63,10 @@ export function SortRulesView({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            Sorting Rules
+            {m.sorting_rules()}
           </h2>
           <p className="text-zinc-400 text-sm mt-1">
-            Define the logic for how tracks are ordered.
+            {m.sorting_rules_description()}
           </p>
         </div>
       </div>
@@ -82,7 +84,7 @@ export function SortRulesView({
       {/* Manual Add Buttons */}
       <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-4">
         <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 block px-1">
-          Add Criterion Manually
+          {m.add_criterion_manually()}
         </span>
         {availableToAdd.length > 0 ? (
           <div className="flex flex-wrap gap-2">
@@ -91,7 +93,7 @@ export function SortRulesView({
                 type="button"
                 key={key}
                 onClick={() => handleAddCriterion(key)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600 hover:text-white text-zinc-400 transition-all text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600 hover:text-white text-zinc-400 transition-all text-sm font-medium cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 {label}
@@ -100,7 +102,7 @@ export function SortRulesView({
           </div>
         ) : (
           <p className="text-zinc-500 text-sm py-2 px-1">
-            All available criteria are already in use.
+            {m.all_criteria_in_use()}
           </p>
         )}
       </div>
