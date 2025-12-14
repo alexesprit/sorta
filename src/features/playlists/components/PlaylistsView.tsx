@@ -5,6 +5,7 @@ import { PlaylistItem } from '@/features/playlists/components/PlaylistItem'
 import { PlaylistSkeleton } from '@/features/playlists/components/PlaylistSkeleton'
 import { usePlaylistSelection } from '@/features/playlists/hooks/usePlaylistSelection'
 import type { Playlist } from '@/features/playlists/models/Playlist'
+import type { ShuffleConfig, SortMode } from '@/features/shuffle/types'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
 import * as m from '@/paraglide/messages'
 import { Button } from '@/shared/components/ui/button'
@@ -18,6 +19,8 @@ interface PlaylistsViewProps {
   onSortPlaylists: () => void
   isProcessing: boolean
   isLoading?: boolean
+  mode?: SortMode
+  shuffleConfig?: ShuffleConfig
 }
 
 export function PlaylistsView({
@@ -27,6 +30,8 @@ export function PlaylistsView({
   onSortPlaylists,
   isProcessing,
   isLoading = false,
+  mode = 'sort',
+  shuffleConfig,
 }: PlaylistsViewProps): JSX.Element {
   const searchId = useId()
   const {
@@ -39,7 +44,10 @@ export function PlaylistsView({
     isAllSelected,
   } = usePlaylistSelection(playlists, setPlaylists)
 
-  const canSortPlaylists = sortRules.length > 0 && selectedCount > 0
+  // Validation based on mode
+  const canSortPlaylists =
+    selectedCount > 0 &&
+    (mode === 'sort' ? sortRules.length > 0 : !!shuffleConfig) // Ensure shuffle config exists for shuffle mode
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 backdrop-blur-sm flex flex-col lg:h-full overflow-hidden shadow-sm">
@@ -111,6 +119,7 @@ export function PlaylistsView({
                 playlist={playlist}
                 onToggle={togglePlaylist}
                 animationDelay={index * 50}
+                mode={mode} // Pass mode to item if needed for visual feedback
               />
             ))
           ) : (
@@ -140,10 +149,15 @@ export function PlaylistsView({
             {isProcessing ? (
               <>
                 <Loader2 className="animate-spin h-4 w-4" />
-                {m.sorting()}
+                {m.processing()}
               </>
-            ) : (
+            ) : mode === 'sort' ? (
               m.sort_playlists({
+                count: selectedCount,
+                plural: selectedCount !== 1 ? 's' : '',
+              })
+            ) : (
+              m.shuffle_playlists({
                 count: selectedCount,
                 plural: selectedCount !== 1 ? 's' : '',
               })

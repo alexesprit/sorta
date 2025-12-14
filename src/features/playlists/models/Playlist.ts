@@ -3,6 +3,7 @@ const PlaylistStatuses = [
   'ready',
   'sorting',
   'sorted',
+  'shuffled',
   'unchanged',
 ] as const
 export type PlaylistStatus = (typeof PlaylistStatuses)[number]

@@ -9,6 +9,8 @@ import type {
   Playlist,
   PlaylistStatus,
 } from '@/features/playlists/models/Playlist'
+import type { ShuffleConfig, SortMode } from '@/features/shuffle/types'
+import { shuffleTracks } from '@/features/shuffle/utils/shuffleTracks'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
 import { sortTracks } from '@/features/sorting/utils/sortTracks'
 import {
@@ -39,14 +41,34 @@ function resetAllPlaylists(playlists: Playlist[]): Playlist[] {
 }
 
 /**
- * Process a single playlist: fetch tracks, sort them, and update on Spotify
+ * Process a single playlist: fetch tracks, sort/shuffle them, and update on Spotify
  */
 async function processSinglePlaylist(
   playlistId: string,
   sortRules: SortRule[],
+  mode: SortMode,
+  shuffleConfig: ShuffleConfig,
 ): Promise<PlaylistStatus> {
   const tracks = await getPlaylistTracks(playlistId)
-  const areTracksSorted = sortTracks(tracks, sortRules)
+  let areTracksSorted = false
+
+  if (mode === 'sort') {
+    areTracksSorted = sortTracks(tracks, sortRules)
+  } else {
+    const shuffledTracks = shuffleTracks(tracks, shuffleConfig)
+
+    // Check if order actually changed
+    // Simple check: compare IDs
+    const currentIds = tracks.map((t) => t.track?.id).join(',')
+    const newIds = shuffledTracks.map((t) => t.track?.id).join(',')
+
+    if (currentIds !== newIds) {
+      // In-place update of the tracks array to match what sortTracks does
+      // sortTracks modifies the array in-place, shuffleTracks returns a new one
+      tracks.splice(0, tracks.length, ...shuffledTracks)
+      areTracksSorted = true
+    }
+  }
 
   if (!areTracksSorted) {
     return 'unchanged'
@@ -54,7 +76,7 @@ async function processSinglePlaylist(
 
   try {
     await setPlaylistTracks(playlistId, tracks)
-    return 'sorted'
+    return mode === 'sort' ? 'sorted' : 'shuffled'
   } catch (_e) {
     return 'error'
   }
@@ -62,6 +84,11 @@ async function processSinglePlaylist(
 
 export function useSortPlaylists(
   sortRules: SortRule[],
+  mode: SortMode = 'sort',
+  shuffleConfig: ShuffleConfig = {
+    weighted: 'random',
+    smart: { artist: false, album: false },
+  },
 ): [
   Playlist[],
   Dispatch<SetStateAction<Playlist[]>>,
@@ -100,7 +127,12 @@ export function useSortPlaylists(
       })
 
       // Process the playlist
-      const finalStatus = await processSinglePlaylist(playlistId, sortRules)
+      const finalStatus = await processSinglePlaylist(
+        playlistId,
+        sortRules,
+        mode,
+        shuffleConfig,
+      )
 
       // Set final status after processing
       startTransition(() => {

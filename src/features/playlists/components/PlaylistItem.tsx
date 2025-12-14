@@ -9,18 +9,21 @@ import type {
   Playlist,
   PlaylistStatus,
 } from '@/features/playlists/models/Playlist'
+import type { SortMode } from '@/features/shuffle/types'
 import * as m from '@/paraglide/messages'
 
 interface PlaylistItemProps {
   playlist: Playlist
   onToggle: (playlistId: string) => void
   animationDelay?: number
+  mode?: SortMode
 }
 
 export function PlaylistItem({
   playlist,
   onToggle,
   animationDelay = 0,
+  mode = 'sort',
 }: PlaylistItemProps): JSX.Element {
   const isSorting = playlist.status === 'sorting'
   const isDisabled = isSorting
@@ -72,20 +75,23 @@ export function PlaylistItem({
         </div>
       </div>
       <div className="flex items-center">
-        {getStatusIndicator(playlist.status)}
+        {getStatusIndicator(playlist.status, mode)}
       </div>
     </button>
   )
 }
 
-function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
+function getStatusIndicator(
+  status: PlaylistStatus,
+  mode: SortMode,
+): JSX.Element | null {
   switch (status) {
     case 'sorting':
       return (
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-spotify" />
           <span className="text-xs text-zinc-400 hidden sm:inline">
-            {m.sorting()}
+            {mode === 'sort' ? m.sorting() : m.processing()}
           </span>
         </div>
       )
@@ -95,6 +101,15 @@ function getStatusIndicator(status: PlaylistStatus): JSX.Element | null {
           <CheckCircle2 className="w-4 h-4 text-spotify" />
           <span className="text-xs text-spotify font-medium hidden sm:inline">
             {m.sorted()}
+          </span>
+        </div>
+      )
+    case 'shuffled':
+      return (
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-spotify" />
+          <span className="text-xs text-spotify font-medium hidden sm:inline">
+            {m.shuffled()}
           </span>
         </div>
       )

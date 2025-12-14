@@ -1,5 +1,7 @@
 export const STORAGE_KEYS = {
   SORT_RULES: 'sort_rules',
+  SORT_MODE: 'sort_mode',
+  SHUFFLE_CONFIG: 'shuffle_config',
   SPOTIFY_ACCESS_TOKEN: 'spotify_access_token',
   SPOTIFY_REFRESH_TOKEN: 'spotify_refresh_token',
   SPOTIFY_TOKEN_EXPIRY: 'spotify_token_expiry',

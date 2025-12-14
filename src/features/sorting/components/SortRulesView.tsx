@@ -1,4 +1,6 @@
 import { Plus } from 'lucide-react'
+import { ShuffleView } from '@/features/shuffle/components/ShuffleView'
+import type { ShuffleConfig, SortMode } from '@/features/shuffle/types'
 import { SortRulesList } from '@/features/sorting/components/SortRulesList'
 import {
   getSortKeyName,
@@ -11,6 +13,10 @@ import * as m from '@/paraglide/messages'
 interface SortRulesViewProps {
   sortRules: SortRule[]
   onSortRulesChange: (sortRules: SortRule[]) => void
+  mode: SortMode
+  onModeChange: (mode: SortMode) => void
+  shuffleConfig: ShuffleConfig
+  onShuffleConfigChange: (config: ShuffleConfig) => void
 }
 
 const availableCriteria: Array<{ key: SortKey; label: string }> = (
@@ -20,6 +26,10 @@ const availableCriteria: Array<{ key: SortKey; label: string }> = (
 export function SortRulesView({
   sortRules,
   onSortRulesChange,
+  mode,
+  onModeChange,
+  shuffleConfig,
+  onShuffleConfigChange,
 }: SortRulesViewProps): JSX.Element {
   function handleToggleOrder(index: number): void {
     const newSortRules = [...sortRules]
@@ -71,41 +81,78 @@ export function SortRulesView({
         </div>
       </div>
 
-      {/* Active Rules List */}
-      <div className="space-y-3 mb-8 min-h-[120px]">
-        <SortRulesList
-          sortRules={sortRules}
-          onToggleOrder={handleToggleOrder}
-          onRemove={handleRemove}
-          onReorder={handleReorder}
-        />
+      {/* Tabs */}
+      <div className="grid grid-cols-2 p-1 bg-zinc-950 rounded-lg border border-zinc-800 mb-6">
+        <button
+          type="button"
+          onClick={() => onModeChange('sort')}
+          className={`py-2 text-sm font-medium rounded-md transition-all ${
+            mode === 'sort'
+              ? 'bg-zinc-800 text-zinc-50 shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          {m.strict_sort()}
+        </button>
+        <button
+          type="button"
+          onClick={() => onModeChange('shuffle')}
+          className={`py-2 text-sm font-medium rounded-md transition-all ${
+            mode === 'shuffle'
+              ? 'bg-zinc-800 text-zinc-50 shadow-sm'
+              : 'text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          {m.smart_shuffle()}
+        </button>
       </div>
 
-      {/* Manual Add Buttons */}
-      <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-4">
-        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 block px-1">
-          {m.add_criterion_manually()}
-        </span>
-        {availableToAdd.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {availableToAdd.map(({ key, label }) => (
-              <button
-                type="button"
-                key={key}
-                onClick={() => handleAddCriterion(key)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600 hover:text-white text-zinc-400 transition-all text-sm font-medium cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {label}
-              </button>
-            ))}
+      {mode === 'sort' ? (
+        <div id="sorter-panel">
+          {/* Active Rules List */}
+          <div className="space-y-3 mb-8 min-h-[120px]">
+            <SortRulesList
+              sortRules={sortRules}
+              onToggleOrder={handleToggleOrder}
+              onRemove={handleRemove}
+              onReorder={handleReorder}
+            />
           </div>
-        ) : (
-          <p className="text-zinc-500 text-sm py-2 px-1">
-            {m.all_criteria_in_use()}
-          </p>
-        )}
-      </div>
+
+          {/* Manual Add Buttons */}
+          <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-4">
+            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3 block px-1">
+              {m.add_criterion_manually()}
+            </span>
+            {availableToAdd.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {availableToAdd.map(({ key, label }) => (
+                  <button
+                    type="button"
+                    key={key}
+                    onClick={() => handleAddCriterion(key)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-600 hover:text-white text-zinc-400 transition-all text-sm font-medium cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-zinc-500 text-sm py-2 px-1">
+                {m.all_criteria_in_use()}
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div id="shuffler-panel">
+          <ShuffleView
+            config={shuffleConfig}
+            onConfigChange={onShuffleConfigChange}
+          />
+        </div>
+      )}
     </div>
   )
 }
