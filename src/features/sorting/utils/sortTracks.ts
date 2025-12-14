@@ -12,13 +12,25 @@ type PlaylistTrack = SpotifyApi.PlaylistTrackObject
 
 type CompareFunction = (trackA: PlaylistTrack, trackB: PlaylistTrack) => number
 
+function createStringCompare(
+  getter: (track: PlaylistTrack) => string,
+): CompareFunction {
+  return (trackA, trackB) => compareStrings(getter(trackA), getter(trackB))
+}
+
+function createNumberCompare(
+  getter: (track: PlaylistTrack) => number,
+): CompareFunction {
+  return (trackA, trackB) => getter(trackA) - getter(trackB)
+}
+
 const rulesCompareFunctions: Record<SortKey, CompareFunction> = {
-  artist: compareArtists,
-  title: compareTitles,
-  album: compareAlbums,
-  release_date: compareReleaseDates,
-  disc_number: compareDiscNumbers,
-  track_number: compareTrackNumbers,
+  artist: createStringCompare(getArtistName),
+  title: createStringCompare(getTrackTitle),
+  album: createStringCompare(getAlbumName),
+  release_date: createStringCompare(getReleaseDate),
+  disc_number: createNumberCompare(getDiscNumber),
+  track_number: createNumberCompare(getTrackNumber),
 }
 
 export function sortTracks(
@@ -47,43 +59,6 @@ export function sortTracks(
   })
 
   return isArrayChanged
-}
-
-function compareAlbums(trackA: PlaylistTrack, trackB: PlaylistTrack): number {
-  return compareStrings(getAlbumName(trackA), getAlbumName(trackB))
-}
-
-function compareArtists(trackA: PlaylistTrack, trackB: PlaylistTrack): number {
-  return compareStrings(getArtistName(trackA), getArtistName(trackB))
-}
-
-function compareReleaseDates(
-  trackA: PlaylistTrack,
-  trackB: PlaylistTrack,
-): number {
-  return compareStrings(getReleaseDate(trackA), getReleaseDate(trackB))
-}
-
-function compareTitles(trackA: PlaylistTrack, trackB: PlaylistTrack): number {
-  return compareStrings(getTrackTitle(trackA), getTrackTitle(trackB))
-}
-
-function compareDiscNumbers(
-  trackA: PlaylistTrack,
-  trackB: PlaylistTrack,
-): number {
-  const discA = getDiscNumber(trackA)
-  const discB = getDiscNumber(trackB)
-  return discA - discB
-}
-
-function compareTrackNumbers(
-  trackA: PlaylistTrack,
-  trackB: PlaylistTrack,
-): number {
-  const trackNumA = getTrackNumber(trackA)
-  const trackNumB = getTrackNumber(trackB)
-  return trackNumA - trackNumB
 }
 
 function compareStrings(str1: string, str2: string): number {
