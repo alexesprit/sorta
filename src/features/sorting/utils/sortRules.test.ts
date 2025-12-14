@@ -158,34 +158,34 @@ describe('getSortKeyName', () => {
   test('should format artist key correctly', () => {
     const result = getSortKeyName('artist')
 
-    expect(result).toBe('artist')
+    expect(result).toBe('Artist')
   })
 
   test('should format album key correctly', () => {
     const result = getSortKeyName('album')
 
-    expect(result).toBe('album')
+    expect(result).toBe('Album')
   })
 
   test('should format release_date key correctly', () => {
     const result = getSortKeyName('release_date')
 
-    expect(result).toBe('release date')
+    expect(result).toBe('Release Date')
   })
 
   test('should format title key correctly', () => {
     const result = getSortKeyName('title')
 
-    expect(result).toBe('track title')
+    expect(result).toBe('Track Title')
   })
 
   test('should handle all sort keys', () => {
     const sortKeys: SortKey[] = ['artist', 'album', 'release_date', 'title']
     const expectedNames: Record<SortKey, string> = {
-      artist: 'artist',
-      album: 'album',
-      release_date: 'release date',
-      title: 'track title',
+      artist: 'Artist',
+      album: 'Album',
+      release_date: 'Release Date',
+      title: 'Track Title',
     }
 
     sortKeys.forEach((key) => {

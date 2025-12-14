@@ -55,7 +55,7 @@ export function convertToRawSortRules(sortRules: SortRule[]): string {
  * @return Display name of the sort key
  */
 export function getSortKeyName(sortKey: SortKey): string {
-  return SORT_KEY_LABELS[sortKey].toLowerCase()
+  return SORT_KEY_LABELS[sortKey]
 }
 
 /* Internal */
