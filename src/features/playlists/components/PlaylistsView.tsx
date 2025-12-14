@@ -58,7 +58,7 @@ export function PlaylistsView({
             <Music className="w-4 h-4 text-spotify" />
             {m.your_playlists()}
           </h2>
-          <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-50 border border-zinc-700">
+          <span className="px-2.5 py-0.5 rounded-full bg-zinc-800 text-xs font-semibold text-zinc-50 border border-zinc-700 whitespace-nowrap">
             {selectedCount} {m.selected()}
           </span>
         </div>

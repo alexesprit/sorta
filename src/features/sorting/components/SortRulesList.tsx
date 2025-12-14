@@ -80,7 +80,7 @@ function SortableRuleItem({
           >
             <GripVertical className="w-4 h-4 text-zinc-600" />
           </button>
-          <div className="inline-flex items-center rounded-full border border-transparent bg-zinc-800 text-zinc-50 px-2.5 py-0.5 text-xs font-semibold">
+          <div className="inline-flex items-center rounded-full border border-transparent bg-zinc-800 text-zinc-50 px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap">
             {label}
           </div>
         </div>
