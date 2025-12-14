@@ -1,7 +1,13 @@
 /**
  * Sort key type.
  */
-export type SortKey = 'artist' | 'title' | 'album' | 'release_date'
+export type SortKey =
+  | 'artist'
+  | 'title'
+  | 'album'
+  | 'release_date'
+  | 'disc_number'
+  | 'track_number'
 
 /**
  * Sort oder type.
@@ -23,6 +29,8 @@ export const SORT_KEY_LABELS: Record<SortKey, string> = {
   album: m.album(),
   release_date: m.release_date(),
   title: m.track_title(),
+  disc_number: m.disc_number(),
+  track_number: m.track_number(),
 }
 
 /**
@@ -62,6 +70,10 @@ function getSortKeyLabel(sortKey: SortKey): string {
       return m.release_date()
     case 'title':
       return m.track_title()
+    case 'disc_number':
+      return m.disc_number()
+    case 'track_number':
+      return m.track_number()
     default:
       return sortKey
   }
@@ -83,7 +95,14 @@ export function getSortKeyName(sortKey: SortKey): string {
 const sortRuleSeparator = ' '
 const sortKeyOrderSeparator = '/'
 
-const validSortKeys = ['artist', 'album', 'release_date', 'title'] as const
+const validSortKeys = [
+  'artist',
+  'album',
+  'release_date',
+  'title',
+  'disc_number',
+  'track_number',
+] as const
 const validSortOrders: SortOrder[] = ['asc', 'desc']
 
 const defaultSortOrder: SortOrder = 'asc'

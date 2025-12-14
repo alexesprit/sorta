@@ -2,7 +2,9 @@ import type { SortKey, SortRule } from '@/features/sorting/utils/sortRules'
 import {
   getAlbumName,
   getArtistName,
+  getDiscNumber,
   getReleaseDate,
+  getTrackNumber,
   getTrackTitle,
 } from '@/features/sorting/utils/trackTypeGuards'
 
@@ -15,6 +17,8 @@ const rulesCompareFunctions: Record<SortKey, CompareFunction> = {
   title: compareTitles,
   album: compareAlbums,
   release_date: compareReleaseDates,
+  disc_number: compareDiscNumbers,
+  track_number: compareTrackNumbers,
 }
 
 export function sortTracks(
@@ -62,6 +66,24 @@ function compareReleaseDates(
 
 function compareTitles(trackA: PlaylistTrack, trackB: PlaylistTrack): number {
   return compareStrings(getTrackTitle(trackA), getTrackTitle(trackB))
+}
+
+function compareDiscNumbers(
+  trackA: PlaylistTrack,
+  trackB: PlaylistTrack,
+): number {
+  const discA = getDiscNumber(trackA)
+  const discB = getDiscNumber(trackB)
+  return discA - discB
+}
+
+function compareTrackNumbers(
+  trackA: PlaylistTrack,
+  trackB: PlaylistTrack,
+): number {
+  const trackNumA = getTrackNumber(trackA)
+  const trackNumB = getTrackNumber(trackB)
+  return trackNumA - trackNumB
 }
 
 function compareStrings(str1: string, str2: string): number {

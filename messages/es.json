@@ -30,6 +30,8 @@
   "album": "Álbum",
   "release_date": "Fecha de Lanzamiento",
   "track_title": "Título de la Pista",
+  "disc_number": "Número de Disco",
+  "track_number": "Número de Pista",
   "ascending": "Ascendente",
   "descending": "Descendente",
   "no_rules_applied": "Aún no se aplicaron reglas",

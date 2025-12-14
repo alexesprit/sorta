@@ -7,6 +7,8 @@ function createTrack(
   artistName: string,
   albumName: string | null = 'Test Album',
   releaseDate: string | null = '2024-01-01',
+  discNumber: number = 1,
+  trackNumber: number = 1,
   id = Math.random().toString(36).substring(7),
 ): SpotifyApi.PlaylistTrackObject {
   return {
@@ -67,8 +69,8 @@ function createTrack(
       external_urls: { spotify: '' },
       type: 'track',
       popularity: 50,
-      track_number: 1,
-      disc_number: 1,
+      track_number: trackNumber,
+      disc_number: discNumber,
       preview_url: null,
       available_markets: [],
       is_playable: true,
@@ -83,6 +85,8 @@ function createTrack(
 function createMultiArtistTrack(
   name: string,
   artistNames: string[],
+  discNumber: number = 1,
+  trackNumber: number = 1,
 ): SpotifyApi.PlaylistTrackObject {
   return {
     added_at: '2023-01-01',
@@ -140,8 +144,8 @@ function createMultiArtistTrack(
       external_urls: { spotify: '' },
       type: 'track',
       popularity: 50,
-      track_number: 1,
-      disc_number: 1,
+      track_number: trackNumber,
+      disc_number: discNumber,
       preview_url: null,
       available_markets: [],
       is_playable: true,
@@ -336,6 +340,94 @@ describe('sortTracks', () => {
               .album as SpotifyApi.AlbumObjectFull
           ).release_date,
         ).toBe('2020-05-15')
+      })
+    })
+
+    describe('disc_number sorting', () => {
+      test('should sort by disc_number ascending', () => {
+        const tracks = [
+          createTrack('Song 1', 'Artist', 'Album', '2024-01-01', 2, 1),
+          createTrack('Song 2', 'Artist', 'Album', '2024-01-01', 1, 1),
+          createTrack('Song 3', 'Artist', 'Album', '2024-01-01', 3, 1),
+        ]
+
+        const sortRules: SortRule[] = [['disc_number', 'asc']]
+        sortTracks(tracks, sortRules)
+
+        expect(
+          (tracks[0]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(1)
+        expect(
+          (tracks[1]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(2)
+        expect(
+          (tracks[2]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(3)
+      })
+
+      test('should sort by disc_number descending', () => {
+        const tracks = [
+          createTrack('Song 1', 'Artist', 'Album', '2024-01-01', 1, 1),
+          createTrack('Song 2', 'Artist', 'Album', '2024-01-01', 2, 1),
+          createTrack('Song 3', 'Artist', 'Album', '2024-01-01', 3, 1),
+        ]
+
+        const sortRules: SortRule[] = [['disc_number', 'desc']]
+        sortTracks(tracks, sortRules)
+
+        expect(
+          (tracks[0]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(3)
+        expect(
+          (tracks[1]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(2)
+        expect(
+          (tracks[2]?.track as SpotifyApi.TrackObjectFull).disc_number,
+        ).toBe(1)
+      })
+    })
+
+    describe('track_number sorting', () => {
+      test('should sort by track_number ascending', () => {
+        const tracks = [
+          createTrack('Song 3', 'Artist', 'Album', '2024-01-01', 1, 3),
+          createTrack('Song 1', 'Artist', 'Album', '2024-01-01', 1, 1),
+          createTrack('Song 2', 'Artist', 'Album', '2024-01-01', 1, 2),
+        ]
+
+        const sortRules: SortRule[] = [['track_number', 'asc']]
+        sortTracks(tracks, sortRules)
+
+        expect(
+          (tracks[0]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(1)
+        expect(
+          (tracks[1]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(2)
+        expect(
+          (tracks[2]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(3)
+      })
+
+      test('should sort by track_number descending', () => {
+        const tracks = [
+          createTrack('Song 1', 'Artist', 'Album', '2024-01-01', 1, 1),
+          createTrack('Song 2', 'Artist', 'Album', '2024-01-01', 1, 2),
+          createTrack('Song 3', 'Artist', 'Album', '2024-01-01', 1, 3),
+        ]
+
+        const sortRules: SortRule[] = [['track_number', 'desc']]
+        sortTracks(tracks, sortRules)
+
+        expect(
+          (tracks[0]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(3)
+        expect(
+          (tracks[1]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(2)
+        expect(
+          (tracks[2]?.track as SpotifyApi.TrackObjectFull).track_number,
+        ).toBe(1)
       })
     })
   })

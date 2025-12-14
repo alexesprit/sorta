@@ -66,3 +66,21 @@ export function getArtistName(track: PlaylistTrack): string {
 export function getTrackTitle(track: PlaylistTrack): string {
   return track.track?.name ?? ''
 }
+
+/**
+ * Safely extract disc number from a track
+ * @returns Disc number or 0 if not available
+ */
+export function getDiscNumber(track: PlaylistTrack): number {
+  const trackInfo = track.track as SpotifyApi.TrackObjectFull
+  return trackInfo.disc_number ?? 0
+}
+
+/**
+ * Safely extract track number from a track
+ * @returns Track number or 0 if not available
+ */
+export function getTrackNumber(track: PlaylistTrack): number {
+  const trackInfo = track.track as SpotifyApi.TrackObjectFull
+  return trackInfo.track_number ?? 0
+}

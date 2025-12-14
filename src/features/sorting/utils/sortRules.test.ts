@@ -180,12 +180,21 @@ describe('getSortKeyName', () => {
   })
 
   test('should handle all sort keys', () => {
-    const sortKeys: SortKey[] = ['artist', 'album', 'release_date', 'title']
+    const sortKeys: SortKey[] = [
+      'artist',
+      'album',
+      'release_date',
+      'title',
+      'disc_number',
+      'track_number',
+    ]
     const expectedNames: Record<SortKey, string> = {
       artist: 'Artist',
       album: 'Album',
       release_date: 'Release Date',
       title: 'Track Title',
+      disc_number: 'Disc Number',
+      track_number: 'Track Number',
     }
 
     sortKeys.forEach((key) => {

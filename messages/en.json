@@ -31,6 +31,8 @@
   "album": "Album",
   "release_date": "Release Date",
   "track_title": "Track Title",
+  "disc_number": "Disc Number",
+  "track_number": "Track Number",
   "ascending": "Ascending",
   "descending": "Descending",
   "no_rules_applied": "No rules applied yet",
