@@ -215,7 +215,7 @@ async function fetchPlaylists(signal?: AbortSignal): Promise<Playlist[]> {
         name,
         href: external_urls.spotify,
         status: 'ready',
-        tracks: tracks.total,
+        tracks: tracks?.total ?? 0,
         selected: false,
       }
     })

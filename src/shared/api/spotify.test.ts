@@ -1,67 +1,43 @@
+import type {
+  Page,
+  PlaylistedTrack,
+  SimplifiedPlaylist,
+  UserProfile,
+} from '@spotify/web-api-ts-sdk'
 import { beforeEach, vi } from 'vitest'
 import { STORAGE_KEYS } from '@/shared/constants/storage'
 import {
-  authorize,
-  exchangeCodeForToken,
   getMyId,
   getMyPlaylists,
   getPlaylistTracks,
   getUsername,
-  refreshAccessToken,
-  setAccessToken,
   setPlaylistTracks,
 } from './spotify'
+import { spotifyClient } from './spotifyClient'
 
-// Mock spotify-web-api-js
-// Use vi.hoisted to ensure these are available in the mock factory
-const {
-  mockSetAccessToken,
-  mockGetUserPlaylists,
-  mockGetPlaylistTracks,
-  mockReplaceTracksInPlaylist,
-  mockAddTracksToPlaylist,
-  mockGetMe,
-} = vi.hoisted(() => ({
-  mockSetAccessToken: vi.fn(),
-  mockGetUserPlaylists: vi.fn(),
-  mockGetPlaylistTracks: vi.fn(),
-  mockReplaceTracksInPlaylist: vi.fn(),
-  mockAddTracksToPlaylist: vi.fn(),
-  mockGetMe: vi.fn(),
+// Mock the spotifyClient
+vi.mock('./spotifyClient', () => ({
+  spotifyClient: {
+    currentUser: {
+      playlists: {
+        playlists: vi.fn(),
+      },
+      profile: vi.fn(),
+    },
+    playlists: {
+      getPlaylistItems: vi.fn(),
+      updatePlaylistItems: vi.fn(),
+      addItemsToPlaylist: vi.fn(),
+    },
+  },
 }))
 
-vi.mock('spotify-web-api-js', () => {
-  // Create the mock implementation inside the factory
-  const MockSpotifyWebApi = vi.fn(function SpotifyWebApi() {
-    return {
-      setAccessToken: mockSetAccessToken,
-      getUserPlaylists: mockGetUserPlaylists,
-      getPlaylistTracks: mockGetPlaylistTracks,
-      replaceTracksInPlaylist: mockReplaceTracksInPlaylist,
-      addTracksToPlaylist: mockAddTracksToPlaylist,
-      getMe: mockGetMe,
-    }
-  })
-
-  return {
-    default: MockSpotifyWebApi,
-  }
-})
-
 describe('spotify API', () => {
-  let mockFetch: ReturnType<typeof vi.fn>
   let mockLocalStorage: Record<string, string>
-  let mockSessionStorage: Record<string, string>
 
   beforeEach(() => {
     // Clear all mocks
     vi.clearAllMocks()
-    mockSetAccessToken.mockClear()
-    mockGetUserPlaylists.mockClear()
-    mockGetPlaylistTracks.mockClear()
-    mockReplaceTracksInPlaylist.mockClear()
-    mockAddTracksToPlaylist.mockClear()
-    mockGetMe.mockClear()
 
     // Mock localStorage
     mockLocalStorage = {}
@@ -79,741 +55,335 @@ describe('spotify API', () => {
       length: 0,
       key: vi.fn(),
     } as Storage
+  })
 
-    // Mock sessionStorage
-    mockSessionStorage = {}
-    global.sessionStorage = {
-      getItem: vi.fn((key: string) => mockSessionStorage[key] || null),
-      setItem: vi.fn((key: string, value: string) => {
-        mockSessionStorage[key] = value
-      }),
-      removeItem: vi.fn((key: string) => {
-        delete mockSessionStorage[key]
-      }),
-      clear: vi.fn(() => {
-        mockSessionStorage = {}
-      }),
-      length: 0,
-      key: vi.fn(),
-    } as Storage
+  describe('getMyPlaylists', () => {
+    test('should fetch user playlists', async () => {
+      const mockPlaylists: SimplifiedPlaylist[] = [
+        {
+          id: 'playlist1',
+          name: 'My Playlist 1',
+          owner: { id: 'user1', display_name: 'User 1' },
+          external_urls: { spotify: 'https://spotify.com/playlist1' },
+        } as SimplifiedPlaylist,
+        {
+          id: 'playlist2',
+          name: 'My Playlist 2',
+          owner: { id: 'user1', display_name: 'User 1' },
+          external_urls: { spotify: 'https://spotify.com/playlist2' },
+        } as SimplifiedPlaylist,
+      ]
 
-    // Mock crypto for PKCE
-    Object.defineProperty(global, 'crypto', {
-      value: {
-        getRandomValues: vi.fn((arr: Uint8Array) => {
-          // Fill with predictable values for testing
-          for (let i = 0; i < arr.length; i++) {
-            arr[i] = i % 62 // Keep within valid range for generateRandomString
-          }
-          return arr
+      const mockResponse: Page<SimplifiedPlaylist> = {
+        items: mockPlaylists,
+        limit: 20,
+        offset: 0,
+        total: 2,
+        href: 'https://api.spotify.com/v1/me/playlists',
+        next: null,
+        previous: null,
+      }
+
+      vi.mocked(
+        spotifyClient.currentUser.playlists.playlists,
+      ).mockResolvedValue(mockResponse)
+
+      const playlists = await getMyPlaylists()
+
+      expect(playlists).toEqual(mockPlaylists)
+      expect(
+        spotifyClient.currentUser.playlists.playlists,
+      ).toHaveBeenCalledTimes(1)
+    })
+
+    test('should return empty array if no playlists', async () => {
+      const mockResponse: Page<SimplifiedPlaylist> = {
+        items: [],
+        limit: 20,
+        offset: 0,
+        total: 0,
+        href: 'https://api.spotify.com/v1/me/playlists',
+        next: null,
+        previous: null,
+      }
+
+      vi.mocked(
+        spotifyClient.currentUser.playlists.playlists,
+      ).mockResolvedValue(mockResponse)
+
+      const playlists = await getMyPlaylists()
+
+      expect(playlists).toEqual([])
+    })
+  })
+
+  describe('getPlaylistTracks', () => {
+    test('should fetch all tracks from a playlist with single page', async () => {
+      const mockTracks: PlaylistedTrack[] = [
+        {
+          track: { id: 'track1', name: 'Track 1', type: 'track' },
+        } as PlaylistedTrack,
+        {
+          track: { id: 'track2', name: 'Track 2', type: 'track' },
+        } as PlaylistedTrack,
+      ]
+
+      const mockResponse: Page<PlaylistedTrack> = {
+        items: mockTracks,
+        limit: 50,
+        offset: 0,
+        total: 2,
+        href: 'https://api.spotify.com/v1/playlists/playlist1/tracks',
+        next: null,
+        previous: null,
+      }
+
+      vi.mocked(spotifyClient.playlists.getPlaylistItems).mockResolvedValue(
+        mockResponse,
+      )
+
+      const tracks = await getPlaylistTracks('playlist1')
+
+      expect(tracks).toEqual(mockTracks)
+      expect(spotifyClient.playlists.getPlaylistItems).toHaveBeenCalledWith(
+        'playlist1',
+        undefined,
+        undefined,
+        50,
+        0,
+      )
+    })
+
+    test('should fetch all tracks from a playlist with pagination', async () => {
+      const mockTracksPage1: PlaylistedTrack[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          track: { id: `track${i}`, name: `Track ${i}`, type: 'track' },
         }),
-        subtle: {
-          digest: vi.fn(async (_algorithm: string, _data: ArrayBuffer) => {
-            // Return a predictable hash for testing
-            const mockHash = new Uint8Array(32)
-            for (let i = 0; i < 32; i++) {
-              mockHash[i] = i
-            }
-            return mockHash.buffer
-          }),
+      ) as PlaylistedTrack[]
+
+      const mockTracksPage2: PlaylistedTrack[] = Array.from(
+        { length: 30 },
+        (_, i) => ({
+          track: {
+            id: `track${i + 50}`,
+            name: `Track ${i + 50}`,
+            type: 'track',
+          },
+        }),
+      ) as PlaylistedTrack[]
+
+      const mockResponsePage1: Page<PlaylistedTrack> = {
+        items: mockTracksPage1,
+        limit: 50,
+        offset: 0,
+        total: 80,
+        href: 'https://api.spotify.com/v1/playlists/playlist1/tracks',
+        next: 'https://api.spotify.com/v1/playlists/playlist1/tracks?offset=50',
+        previous: null,
+      }
+
+      const mockResponsePage2: Page<PlaylistedTrack> = {
+        items: mockTracksPage2,
+        limit: 50,
+        offset: 50,
+        total: 80,
+        href: 'https://api.spotify.com/v1/playlists/playlist1/tracks?offset=50',
+        next: null,
+        previous: 'https://api.spotify.com/v1/playlists/playlist1/tracks',
+      }
+
+      vi.mocked(spotifyClient.playlists.getPlaylistItems)
+        .mockResolvedValueOnce(mockResponsePage1)
+        .mockResolvedValueOnce(mockResponsePage2)
+
+      const tracks = await getPlaylistTracks('playlist1')
+
+      expect(tracks).toHaveLength(80)
+      expect(tracks).toEqual([...mockTracksPage1, ...mockTracksPage2])
+      expect(spotifyClient.playlists.getPlaylistItems).toHaveBeenCalledTimes(2)
+    })
+
+    test('should return empty array for playlist with no tracks', async () => {
+      const mockResponse: Page<PlaylistedTrack> = {
+        items: [],
+        limit: 50,
+        offset: 0,
+        total: 0,
+        href: 'https://api.spotify.com/v1/playlists/playlist1/tracks',
+        next: null,
+        previous: null,
+      }
+
+      vi.mocked(spotifyClient.playlists.getPlaylistItems).mockResolvedValue(
+        mockResponse,
+      )
+
+      const tracks = await getPlaylistTracks('playlist1')
+
+      expect(tracks).toEqual([])
+    })
+  })
+
+  describe('setPlaylistTracks', () => {
+    test('should update playlist with tracks under limit', async () => {
+      const mockTracks: PlaylistedTrack[] = Array.from(
+        { length: 50 },
+        (_, i) => ({
+          track: { id: `track${i}`, name: `Track ${i}`, type: 'track' },
+        }),
+      ) as PlaylistedTrack[]
+
+      vi.mocked(spotifyClient.playlists.updatePlaylistItems).mockResolvedValue({
+        snapshot_id: 'snapshot1',
+      })
+
+      await setPlaylistTracks('playlist1', mockTracks)
+
+      expect(spotifyClient.playlists.updatePlaylistItems).toHaveBeenCalledWith(
+        'playlist1',
+        {
+          uris: mockTracks.map((t) => `spotify:track:${t.track.id}`),
         },
-      } as unknown as Crypto,
-      writable: true,
-      configurable: true,
+      )
+      expect(spotifyClient.playlists.addItemsToPlaylist).not.toHaveBeenCalled()
     })
 
-    // Mock btoa for base64 encoding
-    global.btoa = vi.fn((str: string) => {
-      // Simple mock that returns a predictable value
-      return Buffer.from(str, 'binary').toString('base64')
+    test('should split tracks over 100 into multiple requests', async () => {
+      const mockTracks: PlaylistedTrack[] = Array.from(
+        { length: 150 },
+        (_, i) => ({
+          track: { id: `track${i}`, name: `Track ${i}`, type: 'track' },
+        }),
+      ) as PlaylistedTrack[]
+
+      vi.mocked(spotifyClient.playlists.updatePlaylistItems).mockResolvedValue({
+        snapshot_id: 'snapshot1',
+      })
+      vi.mocked(spotifyClient.playlists.addItemsToPlaylist).mockResolvedValue(
+        undefined as unknown as undefined,
+      )
+
+      await setPlaylistTracks('playlist1', mockTracks)
+
+      // First 100 tracks should be replaced
+      expect(spotifyClient.playlists.updatePlaylistItems).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(spotifyClient.playlists.updatePlaylistItems).toHaveBeenCalledWith(
+        'playlist1',
+        {
+          uris: mockTracks
+            .slice(0, 100)
+            .map((t) => `spotify:track:${t.track.id}`),
+        },
+      )
+
+      // Remaining 50 tracks should be added
+      expect(spotifyClient.playlists.addItemsToPlaylist).toHaveBeenCalledTimes(
+        1,
+      )
+      expect(spotifyClient.playlists.addItemsToPlaylist).toHaveBeenCalledWith(
+        'playlist1',
+        mockTracks.slice(100).map((t) => `spotify:track:${t.track.id}`),
+      )
     })
 
-    // Mock document.location
-    const mockLocation = {
-      href: '',
-      search: '',
-      hash: '',
-      pathname: '',
-      origin: '',
-      protocol: '',
-      host: '',
-      hostname: '',
-      port: '',
-    } as Location
-
-    Object.defineProperty(global, 'document', {
-      value: {
-        location: mockLocation,
-      },
-      writable: true,
-    })
-
-    // Mock fetch
-    mockFetch = vi.fn()
-    global.fetch = mockFetch as typeof global.fetch
-  })
-
-  describe('PKCE Authentication Flow', () => {
-    describe('authorize()', () => {
-      test('should generate code verifier and store in sessionStorage', async () => {
-        await authorize()
-
-        const codeVerifier = sessionStorage.getItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-        )
-        expect(codeVerifier).toBeTruthy()
-        expect(codeVerifier).toHaveLength(64)
+    test('should handle empty track list', async () => {
+      vi.mocked(spotifyClient.playlists.updatePlaylistItems).mockResolvedValue({
+        snapshot_id: 'snapshot1',
       })
 
-      test('should generate state parameter and store in sessionStorage', async () => {
-        await authorize()
+      await setPlaylistTracks('playlist1', [])
 
-        const state = sessionStorage.getItem(STORAGE_KEYS.OAUTH_STATE)
-        expect(state).toBeTruthy()
-        expect(state).toHaveLength(16)
-      })
-
-      test('should redirect to Spotify with correct parameters', async () => {
-        await authorize()
-
-        expect(document.location.href).toContain(
-          'https://accounts.spotify.com/authorize',
-        )
-        expect(document.location.href).toContain('response_type=code')
-        expect(document.location.href).toContain('code_challenge_method=S256')
-        expect(document.location.href).toContain('code_challenge=')
-        expect(document.location.href).toContain('state=')
-        expect(document.location.href).toContain('scope=')
-      })
-
-      test('should include client_id in redirect URL', async () => {
-        await authorize()
-
-        expect(document.location.href).toContain('client_id=')
-      })
-
-      test('should include redirect_uri in redirect URL', async () => {
-        await authorize()
-
-        expect(document.location.href).toContain('redirect_uri=')
-      })
-
-      test('should use code challenge generated from code verifier', async () => {
-        await authorize()
-
-        const codeVerifier = sessionStorage.getItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-        )
-        expect(codeVerifier).toBeTruthy()
-
-        // Verify crypto.subtle.digest was called (code challenge generation)
-        // Note: TextEncoder.encode returns Uint8Array
-        expect(global.crypto.subtle.digest).toHaveBeenCalled()
-        const digestCalls = vi.mocked(global.crypto.subtle.digest).mock.calls
-        expect(digestCalls[0]?.[0]).toBe('SHA-256')
-        // Check that the second argument is a Uint8Array (or array-like with buffer)
-        const digestArg = digestCalls[0]?.[1]
-        expect(digestArg).toBeTruthy()
-        expect(digestArg).toHaveProperty('byteLength')
-        expect(digestArg).toHaveProperty('length')
-      })
-    })
-
-    describe('exchangeCodeForToken()', () => {
-      test('should exchange code for token successfully', async () => {
-        sessionStorage.setItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-          'test-verifier',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'test-access-token',
-            refresh_token: 'test-refresh-token',
-            expires_in: 3600,
-          }),
-        })
-
-        const result = await exchangeCodeForToken('test-code')
-
-        expect(result).toEqual({
-          access_token: 'test-access-token',
-          refresh_token: 'test-refresh-token',
-          expires_in: 3600,
-        })
-      })
-
-      test('should send correct request to token endpoint', async () => {
-        sessionStorage.setItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-          'test-verifier',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'token',
-            refresh_token: 'refresh',
-            expires_in: 3600,
-          }),
-        })
-
-        await exchangeCodeForToken('test-code')
-
-        expect(mockFetch).toHaveBeenCalledWith(
-          'https://accounts.spotify.com/api/token',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: expect.stringContaining('grant_type=authorization_code'),
-          },
-        )
-
-        const callArgs = mockFetch.mock.calls[0]
-        expect(callArgs).toBeDefined()
-        const body = callArgs?.[1]?.body
-        expect(body).toContain('code=test-code')
-        expect(body).toContain('code_verifier=test-verifier')
-      })
-
-      test('should throw error if code verifier not found', async () => {
-        // Don't set code_verifier in sessionStorage
-
-        await expect(exchangeCodeForToken('test-code')).rejects.toThrow(
-          'Code verifier not found',
-        )
-      })
-
-      test('should throw error if token exchange fails', async () => {
-        sessionStorage.setItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-          'test-verifier',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          statusText: 'Bad Request',
-        })
-
-        await expect(exchangeCodeForToken('test-code')).rejects.toThrow(
-          'Token exchange failed: Bad Request',
-        )
-      })
-
-      test('should clear sessionStorage after successful exchange', async () => {
-        sessionStorage.setItem(
-          STORAGE_KEYS.OAUTH_CODE_VERIFIER,
-          'test-verifier',
-        )
-        sessionStorage.setItem(STORAGE_KEYS.OAUTH_STATE, 'test-state')
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'token',
-            refresh_token: 'refresh',
-            expires_in: 3600,
-          }),
-        })
-
-        await exchangeCodeForToken('test-code')
-
-        expect(
-          sessionStorage.getItem(STORAGE_KEYS.OAUTH_CODE_VERIFIER),
-        ).toBeNull()
-        expect(sessionStorage.getItem(STORAGE_KEYS.OAUTH_STATE)).toBeNull()
-      })
-    })
-
-    describe('refreshAccessToken()', () => {
-      test('should refresh access token successfully', async () => {
-        localStorage.setItem(
-          STORAGE_KEYS.SPOTIFY_REFRESH_TOKEN,
-          'test-refresh-token',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'new-access-token',
-            refresh_token: 'new-refresh-token',
-            expires_in: 3600,
-          }),
-        })
-
-        const result = await refreshAccessToken()
-
-        expect(result).toEqual({
-          access_token: 'new-access-token',
-          refresh_token: 'new-refresh-token',
-          expires_in: 3600,
-        })
-      })
-
-      test('should send correct request to token endpoint', async () => {
-        localStorage.setItem(
-          STORAGE_KEYS.SPOTIFY_REFRESH_TOKEN,
-          'test-refresh-token',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'new-token',
-            expires_in: 3600,
-          }),
-        })
-
-        await refreshAccessToken()
-
-        expect(mockFetch).toHaveBeenCalledWith(
-          'https://accounts.spotify.com/api/token',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: expect.stringContaining('grant_type=refresh_token'),
-          },
-        )
-
-        const callArgs = mockFetch.mock.calls[0]
-        expect(callArgs).toBeDefined()
-        const body = callArgs?.[1]?.body
-        expect(body).toContain('refresh_token=test-refresh-token')
-      })
-
-      test('should throw error if refresh token not found', async () => {
-        // Don't set refresh token in localStorage
-
-        await expect(refreshAccessToken()).rejects.toThrow(
-          'Refresh token not found',
-        )
-      })
-
-      test('should throw error if token refresh fails', async () => {
-        localStorage.setItem(
-          STORAGE_KEYS.SPOTIFY_REFRESH_TOKEN,
-          'test-refresh-token',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          statusText: 'Unauthorized',
-        })
-
-        await expect(refreshAccessToken()).rejects.toThrow(
-          'Token refresh failed: Unauthorized',
-        )
-      })
-
-      test('should reuse existing refresh token if not returned', async () => {
-        localStorage.setItem(
-          STORAGE_KEYS.SPOTIFY_REFRESH_TOKEN,
-          'original-refresh-token',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'new-access-token',
-            // No refresh_token in response
-            expires_in: 3600,
-          }),
-        })
-
-        const result = await refreshAccessToken()
-
-        expect(result.refresh_token).toBe('original-refresh-token')
-      })
-
-      test('should use new refresh token if returned', async () => {
-        localStorage.setItem(
-          STORAGE_KEYS.SPOTIFY_REFRESH_TOKEN,
-          'original-refresh-token',
-        )
-
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            access_token: 'new-access-token',
-            refresh_token: 'new-refresh-token',
-            expires_in: 3600,
-          }),
-        })
-
-        const result = await refreshAccessToken()
-
-        expect(result.refresh_token).toBe('new-refresh-token')
-      })
+      expect(spotifyClient.playlists.updatePlaylistItems).toHaveBeenCalledWith(
+        'playlist1',
+        { uris: [] },
+      )
+      expect(spotifyClient.playlists.addItemsToPlaylist).not.toHaveBeenCalled()
     })
   })
 
-  describe('setAccessToken()', () => {
-    test('should set access token on Spotify client', () => {
-      setAccessToken('test-token')
+  describe('getMyId', () => {
+    test('should fetch current user ID', async () => {
+      const mockProfile = {
+        id: 'user123',
+        display_name: 'Test User',
+        type: 'user',
+        uri: 'spotify:user:user123',
+        href: 'https://api.spotify.com/v1/users/user123',
+        external_urls: { spotify: 'https://spotify.com/user/user123' },
+        followers: { href: null, total: 100 },
+      } as UserProfile
 
-      expect(mockSetAccessToken).toHaveBeenCalledWith('test-token')
+      vi.mocked(spotifyClient.currentUser.profile).mockResolvedValue(
+        mockProfile,
+      )
+
+      const userId = await getMyId()
+
+      expect(userId).toBe('user123')
+      expect(spotifyClient.currentUser.profile).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('Spotify API Functions', () => {
-    describe('getMyId()', () => {
-      test('should fetch user ID', async () => {
-        mockGetMe.mockResolvedValueOnce({
-          id: 'test-user-id',
-          display_name: 'Test User',
-        })
+  describe('getUsername', () => {
+    test('should return cached username if available', async () => {
+      mockLocalStorage[STORAGE_KEYS.SPOTIFY_USERNAME] = 'Cached User'
 
-        const result = await getMyId()
+      const username = await getUsername()
 
-        expect(result).toBe('test-user-id')
-        expect(mockGetMe).toHaveBeenCalled()
-      })
+      expect(username).toBe('Cached User')
+      expect(spotifyClient.currentUser.profile).not.toHaveBeenCalled()
     })
 
-    describe('getUsername()', () => {
-      test('should return cached username if available', async () => {
-        localStorage.setItem(STORAGE_KEYS.SPOTIFY_USERNAME, 'Cached User')
+    test('should fetch username from API if not cached', async () => {
+      const mockProfile = {
+        id: 'user123',
+        display_name: 'API User',
+        type: 'user',
+        uri: 'spotify:user:user123',
+        href: 'https://api.spotify.com/v1/users/user123',
+        external_urls: { spotify: 'https://spotify.com/user/user123' },
+        followers: { href: null, total: 100 },
+      } as UserProfile
 
-        const result = await getUsername()
+      vi.mocked(spotifyClient.currentUser.profile).mockResolvedValue(
+        mockProfile,
+      )
 
-        expect(result).toBe('Cached User')
-        expect(mockGetMe).not.toHaveBeenCalled()
-      })
+      const username = await getUsername()
 
-      test('should fetch and cache username from API if not cached', async () => {
-        mockGetMe.mockResolvedValueOnce({
-          id: 'test-user-id',
-          display_name: 'New User',
-        })
-
-        const result = await getUsername()
-
-        expect(result).toBe('New User')
-        expect(mockGetMe).toHaveBeenCalled()
-        expect(localStorage.setItem).toHaveBeenCalledWith(
-          STORAGE_KEYS.SPOTIFY_USERNAME,
-          'New User',
-        )
-      })
-
-      test('should use fallback username if display_name is null', async () => {
-        mockGetMe.mockResolvedValueOnce({
-          id: 'test-user-id',
-          display_name: null,
-        })
-
-        const result = await getUsername()
-
-        expect(result).toBe('User')
-        expect(localStorage.setItem).toHaveBeenCalledWith(
-          STORAGE_KEYS.SPOTIFY_USERNAME,
-          'User',
-        )
-      })
-
-      test('should use fallback username if display_name is undefined', async () => {
-        mockGetMe.mockResolvedValueOnce({
-          id: 'test-user-id',
-          display_name: undefined,
-        })
-
-        const result = await getUsername()
-
-        expect(result).toBe('User')
-        expect(localStorage.setItem).toHaveBeenCalledWith(
-          STORAGE_KEYS.SPOTIFY_USERNAME,
-          'User',
-        )
-      })
+      expect(username).toBe('API User')
+      expect(spotifyClient.currentUser.profile).toHaveBeenCalledTimes(1)
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        STORAGE_KEYS.SPOTIFY_USERNAME,
+        'API User',
+      )
     })
 
-    describe('getMyPlaylists()', () => {
-      test('should fetch playlists successfully', async () => {
-        const mockPlaylists = [
-          { id: 'playlist1', name: 'Playlist 1' },
-          { id: 'playlist2', name: 'Playlist 2' },
-        ]
+    test('should use fallback "User" if display_name is null', async () => {
+      const mockProfile = {
+        id: 'user123',
+        display_name: null as string | null,
+        type: 'user',
+        uri: 'spotify:user:user123',
+        href: 'https://api.spotify.com/v1/users/user123',
+        external_urls: { spotify: 'https://spotify.com/user/user123' },
+        followers: { href: null, total: 100 },
+      } as UserProfile
 
-        mockGetMe.mockResolvedValueOnce({ id: 'test-user-id' })
-        mockGetUserPlaylists.mockResolvedValueOnce({
-          items: mockPlaylists,
-        })
+      vi.mocked(spotifyClient.currentUser.profile).mockResolvedValue(
+        mockProfile,
+      )
 
-        const result = await getMyPlaylists()
+      const username = await getUsername()
 
-        expect(result).toEqual(mockPlaylists)
-        expect(mockGetUserPlaylists).toHaveBeenCalledWith('test-user-id')
-      })
-
-      test('should return empty array when no playlists', async () => {
-        mockGetMe.mockResolvedValueOnce({ id: 'test-user-id' })
-        mockGetUserPlaylists.mockResolvedValueOnce({
-          items: [],
-        })
-
-        const result = await getMyPlaylists()
-
-        expect(result).toEqual([])
-      })
-
-      test('should handle API errors', async () => {
-        mockGetMe.mockResolvedValueOnce({ id: 'test-user-id' })
-        mockGetUserPlaylists.mockRejectedValueOnce(new Error('API Error'))
-
-        await expect(getMyPlaylists()).rejects.toThrow('API Error')
-      })
-    })
-
-    describe('getPlaylistTracks()', () => {
-      test('should fetch single page of tracks', async () => {
-        const mockTracks = [
-          { track: { id: 'track1', name: 'Track 1' } },
-          { track: { id: 'track2', name: 'Track 2' } },
-        ]
-
-        mockGetPlaylistTracks.mockResolvedValueOnce({
-          items: mockTracks,
-          limit: 100,
-          offset: 0,
-          total: 2,
-        })
-
-        const result = await getPlaylistTracks('playlist-id')
-
-        expect(result).toEqual(mockTracks)
-        expect(mockGetPlaylistTracks).toHaveBeenCalledWith('playlist-id', {
-          offset: 0,
-        })
-      })
-
-      test('should fetch multiple pages for playlists with more than 100 tracks', async () => {
-        const mockTracksPage1 = Array.from({ length: 100 }, (_, i) => ({
-          track: { id: `track${i}`, name: `Track ${i}` },
-        }))
-        const mockTracksPage2 = Array.from({ length: 100 }, (_, i) => ({
-          track: { id: `track${i + 100}`, name: `Track ${i + 100}` },
-        }))
-        const mockTracksPage3 = Array.from({ length: 50 }, (_, i) => ({
-          track: { id: `track${i + 200}`, name: `Track ${i + 200}` },
-        }))
-
-        mockGetPlaylistTracks
-          .mockResolvedValueOnce({
-            items: mockTracksPage1,
-            limit: 100,
-            offset: 0,
-            total: 250,
-          })
-          .mockResolvedValueOnce({
-            items: mockTracksPage2,
-            limit: 100,
-            offset: 100,
-            total: 250,
-          })
-          .mockResolvedValueOnce({
-            items: mockTracksPage3,
-            limit: 100,
-            offset: 200,
-            total: 250,
-          })
-
-        const result = await getPlaylistTracks('playlist-id')
-
-        expect(result).toHaveLength(250)
-        expect(mockGetPlaylistTracks).toHaveBeenCalledTimes(3)
-        expect(mockGetPlaylistTracks).toHaveBeenNthCalledWith(
-          1,
-          'playlist-id',
-          {
-            offset: 0,
-          },
-        )
-        expect(mockGetPlaylistTracks).toHaveBeenNthCalledWith(
-          2,
-          'playlist-id',
-          {
-            offset: 100,
-          },
-        )
-        expect(mockGetPlaylistTracks).toHaveBeenNthCalledWith(
-          3,
-          'playlist-id',
-          {
-            offset: 200,
-          },
-        )
-      })
-
-      test('should handle empty playlist', async () => {
-        mockGetPlaylistTracks.mockResolvedValueOnce({
-          items: [],
-          limit: 100,
-          offset: 0,
-          total: 0,
-        })
-
-        const result = await getPlaylistTracks('playlist-id')
-
-        expect(result).toEqual([])
-        expect(mockGetPlaylistTracks).toHaveBeenCalledTimes(1)
-      })
-
-      test('should handle exactly 100 tracks', async () => {
-        const mockTracks = Array.from({ length: 100 }, (_, i) => ({
-          track: { id: `track${i}`, name: `Track ${i}` },
-        }))
-
-        mockGetPlaylistTracks.mockResolvedValueOnce({
-          items: mockTracks,
-          limit: 100,
-          offset: 0,
-          total: 100,
-        })
-
-        const result = await getPlaylistTracks('playlist-id')
-
-        expect(result).toHaveLength(100)
-        expect(mockGetPlaylistTracks).toHaveBeenCalledTimes(1)
-      })
-    })
-
-    describe('setPlaylistTracks()', () => {
-      test('should replace tracks for playlist with less than 100 tracks', async () => {
-        const mockTracks = Array.from({ length: 50 }, (_, i) => ({
-          track: { id: `track${i}` },
-        })) as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledTimes(1)
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledWith(
-          'playlist-id',
-          expect.arrayContaining([
-            'spotify:track:track0',
-            'spotify:track:track49',
-          ]),
-        )
-        expect(mockAddTracksToPlaylist).not.toHaveBeenCalled()
-      })
-
-      test('should replace and add tracks for playlist with more than 100 tracks', async () => {
-        const mockTracks = Array.from({ length: 150 }, (_, i) => ({
-          track: { id: `track${i}` },
-        })) as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-        mockAddTracksToPlaylist.mockResolvedValueOnce({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledTimes(1)
-        expect(mockAddTracksToPlaylist).toHaveBeenCalledTimes(1)
-
-        // Verify first 100 were replaced
-        const replaceCall = mockReplaceTracksInPlaylist.mock.calls[0]
-        expect(replaceCall).toBeDefined()
-        expect(replaceCall?.[1]).toHaveLength(100)
-
-        // Verify next 50 were added
-        const addCall = mockAddTracksToPlaylist.mock.calls[0]
-        expect(addCall).toBeDefined()
-        expect(addCall?.[1]).toHaveLength(50)
-      })
-
-      test('should handle exactly 100 tracks', async () => {
-        const mockTracks = Array.from({ length: 100 }, (_, i) => ({
-          track: { id: `track${i}` },
-        })) as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledTimes(1)
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledWith(
-          'playlist-id',
-          expect.any(Array),
-        )
-        expect(mockReplaceTracksInPlaylist.mock.calls[0]?.[1]).toHaveLength(100)
-        expect(mockAddTracksToPlaylist).not.toHaveBeenCalled()
-      })
-
-      test('should handle exactly 200 tracks', async () => {
-        const mockTracks = Array.from({ length: 200 }, (_, i) => ({
-          track: { id: `track${i}` },
-        })) as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-        mockAddTracksToPlaylist.mockResolvedValueOnce({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledTimes(1)
-        expect(mockAddTracksToPlaylist).toHaveBeenCalledTimes(1)
-
-        // Verify first 100 were replaced
-        expect(mockReplaceTracksInPlaylist.mock.calls[0]?.[1]).toHaveLength(100)
-
-        // Verify next 100 were added
-        expect(mockAddTracksToPlaylist.mock.calls[0]?.[1]).toHaveLength(100)
-      })
-
-      test('should handle 250 tracks with multiple add operations', async () => {
-        const mockTracks = Array.from({ length: 250 }, (_, i) => ({
-          track: { id: `track${i}` },
-        })) as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-        mockAddTracksToPlaylist.mockResolvedValue({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledTimes(1)
-        expect(mockAddTracksToPlaylist).toHaveBeenCalledTimes(2)
-
-        // Verify first 100 were replaced
-        expect(mockReplaceTracksInPlaylist.mock.calls[0]?.[1]).toHaveLength(100)
-
-        // Verify next 100 were added
-        expect(mockAddTracksToPlaylist.mock.calls[0]?.[1]).toHaveLength(100)
-
-        // Verify final 50 were added
-        expect(mockAddTracksToPlaylist.mock.calls[1]?.[1]).toHaveLength(50)
-      })
-
-      test('should format track URIs correctly', async () => {
-        const mockTracks = [
-          { track: { id: 'abc123' } },
-          { track: { id: 'def456' } },
-        ] as SpotifyApi.PlaylistTrackObject[]
-
-        mockReplaceTracksInPlaylist.mockResolvedValueOnce({})
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        expect(mockReplaceTracksInPlaylist).toHaveBeenCalledWith(
-          'playlist-id',
-          ['spotify:track:abc123', 'spotify:track:def456'],
-        )
-      })
-
-      test('should handle empty tracks array', async () => {
-        const mockTracks: SpotifyApi.PlaylistTrackObject[] = []
-
-        await setPlaylistTracks('playlist-id', mockTracks)
-
-        // When tracks array is empty, the for loop never executes
-        // so neither replaceTracksInPlaylist nor addTracksToPlaylist should be called
-        expect(mockReplaceTracksInPlaylist).not.toHaveBeenCalled()
-        expect(mockAddTracksToPlaylist).not.toHaveBeenCalled()
-      })
+      expect(username).toBe('User')
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        STORAGE_KEYS.SPOTIFY_USERNAME,
+        'User',
+      )
     })
   })
 })

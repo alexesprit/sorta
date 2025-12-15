@@ -1,45 +1,85 @@
-import { useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { IntroScreen } from '@/features/auth/components/IntroScreen'
-import { useAuthCallback } from '@/features/auth/hooks/useAuthCallback'
-import { useTokenRefresh } from '@/features/auth/hooks/useTokenRefresh'
-import type { TokenData } from '@/features/auth/services/tokenStorage'
-import { tokenStorage } from '@/features/auth/services/tokenStorage'
 import { Header } from '@/features/layout/components/Header'
 import { MainContent } from '@/features/layout/components/MainContent'
 import * as m from '@/paraglide/messages'
-import { setAccessToken } from '@/shared/api/spotify'
+import { isAuthenticated, spotifyClient } from '@/shared/api/spotifyClient'
 import { Button } from '@/shared/components/ui/button'
 import { useUsername } from '@/shared/hooks/useUsername'
 import '@/features/layout/styles.css'
 
 export function App(): JSX.Element {
-  // Token update callback
-  const handleTokenUpdate = useCallback((tokenData: TokenData) => {
-    setAccessToken(tokenData.accessToken)
-  }, [])
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Token refresh error callback
-  const handleRefreshError = useCallback(() => {
-    // Clear token when refresh fails
-    tokenStorage.clear()
-    setAccessToken(null)
-  }, [])
-
-  // Setup token refresh management
-  const { scheduleRefresh, handleTokenRefresh } = useTokenRefresh({
-    onTokenUpdate: handleTokenUpdate,
-    onRefreshError: handleRefreshError,
-  })
-
-  // Handle OAuth callback and token restoration
-  const { accessToken, authError, isLoading } = useAuthCallback({
-    onTokenUpdate: handleTokenUpdate,
-    onTokenRefresh: handleTokenRefresh,
-    scheduleRefresh,
-  })
-
-  const isSignedIn = accessToken !== null
   const username = useUsername(isSignedIn)
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // Check for OAuth errors in URL
+        const urlParams = new URLSearchParams(window.location.search)
+        const hasAuthError = urlParams.has('error')
+
+        if (hasAuthError) {
+          const error = urlParams.get('error') || 'authentication_failed'
+          setAuthError(error)
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/')
+          setIsLoading(false)
+          return
+        }
+
+        // Check if we're handling an OAuth callback
+        const hasAuthCode = urlParams.has('code')
+
+        if (hasAuthCode) {
+          // The URL has an auth code - the SDK needs to complete the token exchange
+          // Call authenticate() which will detect the code in the URL and complete the flow
+          try {
+            await spotifyClient.authenticate()
+            // Success! Authentication completed
+            // Clean up URL after SDK processes it
+            window.history.replaceState({}, document.title, '/')
+            setIsSignedIn(true)
+            setIsLoading(false)
+            return
+          } catch (err) {
+            // Authentication failed
+            console.error('OAuth callback processing failed:', err)
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/')
+            const errorMessage =
+              err instanceof Error ? err.message : String(err)
+            // If it's a verifier error, maybe authentication actually succeeded
+            // Check if we have tokens in storage
+            if (errorMessage.includes('verifier')) {
+              console.warn('Verifier error, but checking if tokens exist...')
+              // Fall through to check authentication status below
+            } else {
+              // Real error - show it to the user
+              throw err
+            }
+          }
+        }
+
+        // Check authentication status
+        // The SDK will automatically refresh tokens if needed
+        const authenticated = await isAuthenticated()
+        setIsSignedIn(authenticated)
+      } catch (error) {
+        console.error('Authentication error:', error)
+        setAuthError(
+          error instanceof Error ? error.message : 'authentication_failed',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    initAuth()
+  }, [])
 
   if (isLoading) {
     return <div>{m.loading()}</div>

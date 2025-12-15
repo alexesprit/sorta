@@ -1,3 +1,4 @@
+import type { PlaylistedTrack, Track, TrackItem } from '@spotify/web-api-ts-sdk'
 import type {
   ShuffleConfig,
   ShuffleWeight,
@@ -8,7 +9,7 @@ import {
   getArtistName,
 } from '@/features/sorting/utils/trackTypeGuards'
 
-type PlaylistTrack = SpotifyApi.PlaylistTrackObject
+type PlaylistTrack = PlaylistedTrack<TrackItem>
 
 // Fisher-Yates shuffle
 function fisherYatesShuffle<T>(array: T[]): T[] {
@@ -25,7 +26,11 @@ function fisherYatesShuffle<T>(array: T[]): T[] {
 
 // Get popularity score (0-100)
 function getPopularity(track: PlaylistTrack): number {
-  return (track.track as SpotifyApi.TrackObjectFull).popularity || 0
+  // Check if the track is a Track (not Episode) and has popularity
+  if (track.track.type === 'track') {
+    return (track.track as Track).popularity || 0
+  }
+  return 0
 }
 
 // Weighted shuffle based on popularity

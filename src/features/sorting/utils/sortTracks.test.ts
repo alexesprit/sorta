@@ -1,3 +1,9 @@
+import type {
+  Album,
+  PlaylistedTrack,
+  SimplifiedArtist,
+  Track,
+} from '@spotify/web-api-ts-sdk'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
 import { sortTracks } from '@/features/sorting/utils/sortTracks'
 
@@ -10,7 +16,7 @@ function createTrack(
   discNumber: number = 1,
   trackNumber: number = 1,
   id = Math.random().toString(36).substring(7),
-): SpotifyApi.PlaylistTrackObject {
+): PlaylistedTrack<Track> {
   return {
     added_at: '2023-01-01',
     added_by: {
@@ -21,6 +27,7 @@ function createTrack(
       type: 'user',
     },
     is_local: false,
+    primary_color: '',
     track: {
       id,
       name,
@@ -32,7 +39,7 @@ function createTrack(
           href: '',
           external_urls: { spotify: '' },
           type: 'artist',
-        } as SpotifyApi.ArtistObjectSimplified,
+        } as SimplifiedArtist,
       ],
       album: {
         id: 'album-id',
@@ -61,7 +68,7 @@ function createTrack(
           previous: null,
           total: 10,
         },
-      } as unknown as SpotifyApi.AlbumObjectFull,
+      } as unknown as Album,
       duration_ms: 180000,
       explicit: false,
       uri: `spotify:track:${id}`,
@@ -77,8 +84,8 @@ function createTrack(
       linked_from: undefined,
       restrictions: undefined,
       external_ids: { isrc: 'test-isrc' },
-    } as unknown as SpotifyApi.TrackObjectFull,
-  } as SpotifyApi.PlaylistTrackObject
+    } as unknown as Track,
+  }
 }
 
 // Helper function to create a track with multiple artists
@@ -87,7 +94,7 @@ function createMultiArtistTrack(
   artistNames: string[],
   discNumber: number = 1,
   trackNumber: number = 1,
-): SpotifyApi.PlaylistTrackObject {
+): PlaylistedTrack<Track> {
   return {
     added_at: '2023-01-01',
     added_by: {
@@ -98,6 +105,7 @@ function createMultiArtistTrack(
       type: 'user',
     },
     is_local: false,
+    primary_color: '',
     track: {
       id: Math.random().toString(36).substring(7),
       name,
@@ -108,7 +116,7 @@ function createMultiArtistTrack(
         href: '',
         external_urls: { spotify: '' },
         type: 'artist',
-      })) as SpotifyApi.ArtistObjectSimplified[],
+      })) as SimplifiedArtist[],
       album: {
         id: 'album-id',
         name: 'Test Album',
@@ -136,7 +144,7 @@ function createMultiArtistTrack(
           previous: null,
           total: 10,
         },
-      } as unknown as SpotifyApi.AlbumObjectFull,
+      } as unknown as Album,
       duration_ms: 180000,
       explicit: false,
       uri: 'spotify:track:test',
@@ -152,8 +160,8 @@ function createMultiArtistTrack(
       linked_from: undefined,
       restrictions: undefined,
       external_ids: { isrc: 'test-isrc' },
-    } as unknown as SpotifyApi.TrackObjectFull,
-  } as SpotifyApi.PlaylistTrackObject
+    } as unknown as Track,
+  }
 }
 
 describe('sortTracks', () => {
@@ -248,15 +256,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['album', 'asc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Alpha')
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Bravo')
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Zulu')
+        expect((tracks[0]?.track as Track).album?.name).toBe('Alpha')
+        expect((tracks[1]?.track as Track).album?.name).toBe('Bravo')
+        expect((tracks[2]?.track as Track).album?.name).toBe('Zulu')
       })
 
       test('should sort by album descending', () => {
@@ -269,15 +271,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['album', 'desc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Zulu')
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Bravo')
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).album?.name,
-        ).toBe('Alpha')
+        expect((tracks[0]?.track as Track).album?.name).toBe('Zulu')
+        expect((tracks[1]?.track as Track).album?.name).toBe('Bravo')
+        expect((tracks[2]?.track as Track).album?.name).toBe('Alpha')
       })
     })
 
@@ -293,22 +289,13 @@ describe('sortTracks', () => {
         sortTracks(tracks, sortRules)
 
         expect(
-          (
-            (tracks[0]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[0]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2020-05-15')
         expect(
-          (
-            (tracks[1]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[1]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2022-12-25')
         expect(
-          (
-            (tracks[2]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[2]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2024-01-01')
       })
 
@@ -323,22 +310,13 @@ describe('sortTracks', () => {
         sortTracks(tracks, sortRules)
 
         expect(
-          (
-            (tracks[0]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[0]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2024-01-01')
         expect(
-          (
-            (tracks[1]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[1]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2022-12-25')
         expect(
-          (
-            (tracks[2]?.track as SpotifyApi.TrackObjectFull)
-              .album as SpotifyApi.AlbumObjectFull
-          ).release_date,
+          ((tracks[2]?.track as Track).album as unknown as Album).release_date,
         ).toBe('2020-05-15')
       })
     })
@@ -354,15 +332,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['disc_number', 'asc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(1)
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(2)
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(3)
+        expect((tracks[0]?.track as Track).disc_number).toBe(1)
+        expect((tracks[1]?.track as Track).disc_number).toBe(2)
+        expect((tracks[2]?.track as Track).disc_number).toBe(3)
       })
 
       test('should sort by disc_number descending', () => {
@@ -375,15 +347,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['disc_number', 'desc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(3)
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(2)
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).disc_number,
-        ).toBe(1)
+        expect((tracks[0]?.track as Track).disc_number).toBe(3)
+        expect((tracks[1]?.track as Track).disc_number).toBe(2)
+        expect((tracks[2]?.track as Track).disc_number).toBe(1)
       })
     })
 
@@ -398,15 +364,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['track_number', 'asc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(1)
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(2)
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(3)
+        expect((tracks[0]?.track as Track).track_number).toBe(1)
+        expect((tracks[1]?.track as Track).track_number).toBe(2)
+        expect((tracks[2]?.track as Track).track_number).toBe(3)
       })
 
       test('should sort by track_number descending', () => {
@@ -419,15 +379,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['track_number', 'desc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(3)
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(2)
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).track_number,
-        ).toBe(1)
+        expect((tracks[0]?.track as Track).track_number).toBe(3)
+        expect((tracks[1]?.track as Track).track_number).toBe(2)
+        expect((tracks[2]?.track as Track).track_number).toBe(1)
       })
     })
   })
@@ -448,27 +402,19 @@ describe('sortTracks', () => {
       sortTracks(tracks, sortRules)
 
       // Alice - Apple
-      expect(
-        (tracks[0]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Alice')
+      expect((tracks[0]?.track as Track).artists[0]?.name).toBe('Alice')
       expect(tracks[0]?.track?.name).toBe('Apple')
 
       // Alice - Zebra
-      expect(
-        (tracks[1]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Alice')
+      expect((tracks[1]?.track as Track).artists[0]?.name).toBe('Alice')
       expect(tracks[1]?.track?.name).toBe('Zebra')
 
       // Bob - Apple
-      expect(
-        (tracks[2]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Bob')
+      expect((tracks[2]?.track as Track).artists[0]?.name).toBe('Bob')
       expect(tracks[2]?.track?.name).toBe('Apple')
 
       // Bob - Mango
-      expect(
-        (tracks[3]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Bob')
+      expect((tracks[3]?.track as Track).artists[0]?.name).toBe('Bob')
       expect(tracks[3]?.track?.name).toBe('Mango')
     })
 
@@ -487,47 +433,27 @@ describe('sortTracks', () => {
       sortTracks(tracks, sortRules)
 
       // Alice - 2024
+      expect((tracks[0]?.track as Track).artists[0]?.name).toBe('Alice')
       expect(
-        (tracks[0]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Alice')
-      expect(
-        (
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull)
-            .album as SpotifyApi.AlbumObjectFull
-        ).release_date,
+        ((tracks[0]?.track as Track).album as unknown as Album).release_date,
       ).toBe('2024-01-01')
 
       // Alice - 2020
+      expect((tracks[1]?.track as Track).artists[0]?.name).toBe('Alice')
       expect(
-        (tracks[1]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Alice')
-      expect(
-        (
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull)
-            .album as SpotifyApi.AlbumObjectFull
-        ).release_date,
+        ((tracks[1]?.track as Track).album as unknown as Album).release_date,
       ).toBe('2020-01-01')
 
       // Bob - 2024
+      expect((tracks[2]?.track as Track).artists[0]?.name).toBe('Bob')
       expect(
-        (tracks[2]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Bob')
-      expect(
-        (
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull)
-            .album as SpotifyApi.AlbumObjectFull
-        ).release_date,
+        ((tracks[2]?.track as Track).album as unknown as Album).release_date,
       ).toBe('2024-01-01')
 
       // Bob - 2020
+      expect((tracks[3]?.track as Track).artists[0]?.name).toBe('Bob')
       expect(
-        (tracks[3]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Bob')
-      expect(
-        (
-          (tracks[3]?.track as SpotifyApi.TrackObjectFull)
-            .album as SpotifyApi.AlbumObjectFull
-        ).release_date,
+        ((tracks[3]?.track as Track).album as unknown as Album).release_date,
       ).toBe('2020-01-01')
     })
 
@@ -547,27 +473,19 @@ describe('sortTracks', () => {
       sortTracks(tracks, sortRules)
 
       // Alice - Album B - Song A
-      expect((tracks[0]?.track as SpotifyApi.TrackObjectFull).album?.name).toBe(
-        'Album B',
-      )
+      expect((tracks[0]?.track as Track).album?.name).toBe('Album B')
       expect(tracks[0]?.track?.name).toBe('Song A')
 
       // Alice - Album A - Song A
-      expect((tracks[1]?.track as SpotifyApi.TrackObjectFull).album?.name).toBe(
-        'Album A',
-      )
+      expect((tracks[1]?.track as Track).album?.name).toBe('Album A')
       expect(tracks[1]?.track?.name).toBe('Song A')
 
       // Alice - Album A - Song B
-      expect((tracks[2]?.track as SpotifyApi.TrackObjectFull).album?.name).toBe(
-        'Album A',
-      )
+      expect((tracks[2]?.track as Track).album?.name).toBe('Album A')
       expect(tracks[2]?.track?.name).toBe('Song B')
 
       // Alice - Album A - Song Z
-      expect((tracks[3]?.track as SpotifyApi.TrackObjectFull).album?.name).toBe(
-        'Album A',
-      )
+      expect((tracks[3]?.track as Track).album?.name).toBe('Album A')
       expect(tracks[3]?.track?.name).toBe('Song Z')
     })
   })
@@ -585,15 +503,9 @@ describe('sortTracks', () => {
         sortTracks(tracks, sortRules)
 
         // Empty string should come first (compareStrings returns -1 for empty str1)
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('')
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('Alice')
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('Bob')
+        expect((tracks[0]?.track as Track).artists[0]?.name).toBe('')
+        expect((tracks[1]?.track as Track).artists[0]?.name).toBe('Alice')
+        expect((tracks[2]?.track as Track).artists[0]?.name).toBe('Bob')
       })
 
       test('should handle missing album name', () => {
@@ -631,7 +543,7 @@ describe('sortTracks', () => {
 
     describe('empty and single track arrays', () => {
       test('should handle empty array', () => {
-        const tracks: SpotifyApi.PlaylistTrackObject[] = []
+        const tracks: PlaylistedTrack<Track>[] = []
         const sortRules: SortRule[] = [['artist', 'asc']]
 
         const result = sortTracks(tracks, sortRules)
@@ -663,15 +575,9 @@ describe('sortTracks', () => {
         const sortRules: SortRule[] = [['artist', 'asc']]
         sortTracks(tracks, sortRules)
 
-        expect(
-          (tracks[0]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('Alice')
-        expect(
-          (tracks[1]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('Mike')
-        expect(
-          (tracks[2]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-        ).toBe('Zara')
+        expect((tracks[0]?.track as Track).artists[0]?.name).toBe('Alice')
+        expect((tracks[1]?.track as Track).artists[0]?.name).toBe('Mike')
+        expect((tracks[2]?.track as Track).artists[0]?.name).toBe('Zara')
       })
     })
   })
@@ -702,7 +608,7 @@ describe('sortTracks', () => {
     })
 
     test('should return false for empty array', () => {
-      const tracks: SpotifyApi.PlaylistTrackObject[] = []
+      const tracks: PlaylistedTrack<Track>[] = []
       const sortRules: SortRule[] = [['artist', 'asc']]
 
       const result = sortTracks(tracks, sortRules)
@@ -729,9 +635,7 @@ describe('sortTracks', () => {
       const result = sortTracks(tracks, sortRules)
 
       expect(result).toBe(true)
-      expect(
-        (tracks[0]?.track as SpotifyApi.TrackObjectFull).artists[0]?.name,
-      ).toBe('Zara')
+      expect((tracks[0]?.track as Track).artists[0]?.name).toBe('Zara')
     })
   })
 
@@ -762,10 +666,8 @@ describe('sortTracks', () => {
       sortTracks(tracks, sortRules)
 
       // Both Alice variations should be before bob
-      const firstArtist = (tracks[0]?.track as SpotifyApi.TrackObjectFull)
-        .artists[0]?.name
-      const lastArtist = (tracks[2]?.track as SpotifyApi.TrackObjectFull)
-        .artists[0]?.name
+      const firstArtist = (tracks[0]?.track as Track).artists[0]?.name
+      const lastArtist = (tracks[2]?.track as Track).artists[0]?.name
 
       expect(firstArtist?.toLowerCase()).toBe('alice')
       expect(lastArtist?.toLowerCase()).toBe('bob')

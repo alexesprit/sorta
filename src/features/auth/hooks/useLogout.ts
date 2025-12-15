@@ -1,21 +1,17 @@
 import { useCallback } from 'react'
-import { tokenStorage } from '@/features/auth/services/tokenStorage'
-import { setAccessToken } from '@/shared/api/spotify'
+import { logout as sdkLogout } from '@/shared/api/spotifyClient'
 
 /**
  * Hook for handling user logout
- * Clears all authentication tokens from localStorage
+ * Uses SDK's logout functionality which clears tokens and reloads the page
  */
 export function useLogout() {
   const logout = useCallback(() => {
-    // Clear tokens from storage
-    tokenStorage.clear()
-
-    // Clear token from Spotify API client
-    setAccessToken(null)
-
-    // Reload page to reset application state and show IntroScreen
-    window.location.reload()
+    // SDK's logout function handles:
+    // 1. Clearing SDK's stored tokens
+    // 2. Clearing old custom tokens (migration)
+    // 3. Reloading the page
+    sdkLogout()
   }, [])
 
   return { logout }

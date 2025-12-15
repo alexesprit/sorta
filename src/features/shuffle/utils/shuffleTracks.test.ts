@@ -1,3 +1,9 @@
+import type {
+  PlaylistedTrack,
+  SimplifiedAlbum,
+  SimplifiedArtist,
+  Track,
+} from '@spotify/web-api-ts-sdk'
 import { describe, expect, it } from 'vitest'
 import { shuffleTracks } from '@/features/shuffle/utils/shuffleTracks'
 import { getArtistName } from '@/features/sorting/utils/trackTypeGuards'
@@ -8,7 +14,7 @@ function createTrack(
   artist: string,
   album: string,
   popularity: number,
-): SpotifyApi.PlaylistTrackObject {
+): PlaylistedTrack<Track> {
   return {
     added_at: '2023-01-01T00:00:00Z',
     added_by: {
@@ -19,6 +25,7 @@ function createTrack(
       external_urls: { spotify: '' },
     },
     is_local: false,
+    primary_color: '',
     track: {
       id,
       name: `Track ${id}`,
@@ -33,7 +40,11 @@ function createTrack(
         images: [],
         type: 'album',
         uri: `spotify:album:${album}`,
-      },
+        release_date: '2024-01-01',
+        release_date_precision: 'day',
+        total_tracks: 10,
+        artists: [],
+      } as unknown as SimplifiedAlbum,
       artists: [
         {
           id: `artist-${artist}`,
@@ -42,7 +53,7 @@ function createTrack(
           uri: `spotify:artist:${artist}`,
           external_urls: { spotify: '' },
           href: '',
-        },
+        } as SimplifiedArtist,
       ],
       available_markets: [],
       disc_number: 1,
@@ -54,7 +65,7 @@ function createTrack(
       preview_url: undefined,
       track_number: 1,
       uri: `spotify:track:${id}`,
-    } as unknown as SpotifyApi.TrackObjectFull,
+    } as unknown as Track,
   }
 }
 
@@ -141,17 +152,17 @@ describe('shuffleTracks', () => {
     const obscure = createTrack('o', 'Obs', 'Obs', 0)
 
     // Create 100 of each
-    const tracks: SpotifyApi.PlaylistTrackObject[] = []
+    const tracks: PlaylistedTrack<Track>[] = []
     for (let i = 0; i < 50; i++) {
       tracks.push({
         ...popular,
-        track: { ...popular.track, id: `p${i}` } as SpotifyApi.TrackObjectFull,
+        track: { ...popular.track, id: `p${i}` } as Track,
       })
     }
     for (let i = 0; i < 50; i++) {
       tracks.push({
         ...obscure,
-        track: { ...obscure.track, id: `o${i}` } as SpotifyApi.TrackObjectFull,
+        track: { ...obscure.track, id: `o${i}` } as Track,
       })
     }
 
@@ -163,7 +174,7 @@ describe('shuffleTracks', () => {
     // Check first 20 tracks
     const first20 = result.slice(0, 20)
     const popularCount = first20.filter(
-      (t) => (t.track as SpotifyApi.TrackObjectFull).popularity === 100,
+      (t) => (t.track as Track).popularity === 100,
     ).length
 
     // With weighted shuffle, popular tracks should be overrepresented at the start
@@ -175,17 +186,17 @@ describe('shuffleTracks', () => {
     const popular = createTrack('p', 'Pop', 'Pop', 100)
     const obscure = createTrack('o', 'Obs', 'Obs', 0)
 
-    const tracks: SpotifyApi.PlaylistTrackObject[] = []
+    const tracks: PlaylistedTrack<Track>[] = []
     for (let i = 0; i < 50; i++) {
       tracks.push({
         ...popular,
-        track: { ...popular.track, id: `p${i}` } as SpotifyApi.TrackObjectFull,
+        track: { ...popular.track, id: `p${i}` } as Track,
       })
     }
     for (let i = 0; i < 50; i++) {
       tracks.push({
         ...obscure,
-        track: { ...obscure.track, id: `o${i}` } as SpotifyApi.TrackObjectFull,
+        track: { ...obscure.track, id: `o${i}` } as Track,
       })
     }
 
@@ -196,7 +207,7 @@ describe('shuffleTracks', () => {
 
     const first20 = result.slice(0, 20)
     const obscureCount = first20.filter(
-      (t) => (t.track as SpotifyApi.TrackObjectFull).popularity === 0,
+      (t) => (t.track as Track).popularity === 0,
     ).length
 
     expect(obscureCount).toBeGreaterThan(10)

@@ -49,7 +49,7 @@ The codebase uses a feature-based architecture under `src/features/`:
 
 ### Shared Resources (`src/shared/`)
 
-- **api/spotify.ts**: Spotify API client wrapper using `spotify-web-api-js`
+- **api/spotify.ts**: Spotify API client using `@spotify/web-api-ts-sdk`
 - **components/ui/**: Reusable UI components (built with Radix UI + Tailwind)
 - **hooks/**: Shared React hooks
 
@@ -59,13 +59,42 @@ TypeScript path alias `@/*` maps to `src/*` (configured in tsconfig.json and vit
 
 ## Authentication Flow
 
-The app uses Spotify's OAuth 2.0 PKCE flow (not the legacy implicit grant):
+The app uses Spotify's OAuth 2.0 PKCE flow via the `@spotify/web-api-ts-sdk`:
 
-1. **authorize()** generates code verifier/challenge and redirects to Spotify
-2. **exchangeCodeForToken()** exchanges authorization code for access/refresh tokens
-3. **refreshAccessToken()** automatically refreshes tokens before expiry
-4. Tokens stored in localStorage, OAuth state in sessionStorage
-5. App.tsx handles the full auth lifecycle including token refresh scheduling
+1. **SDK initialization**: `SpotifyApi.withUserAuthorization()` creates authenticated client
+2. **Built-in PKCE flow**: SDK handles code verifier/challenge generation and token exchange
+3. **Automatic token refresh**: SDK manages token lifecycle and refreshes before expiry
+4. **Persistent storage**: SDK stores tokens in localStorage using its own keys
+5. **App.tsx**: Initializes SDK with client ID, redirect URI, and requested scopes
+
+The SDK provides a simplified authentication experience compared to manual PKCE implementation:
+- No manual token storage or refresh logic needed
+- Built-in error handling for auth failures
+- Seamless token refresh during API calls
+
+### API Usage Patterns
+
+The Spotify SDK provides strongly-typed methods for all API operations:
+
+```typescript
+// Get current user profile
+const profile = await sdk.currentUser.profile()
+
+// Get user's playlists (paginated)
+const playlists = await sdk.currentUser.playlists.playlists(limit, offset)
+
+// Get playlist tracks
+const tracks = await sdk.playlists.getPlaylist(playlistId)
+
+// Update playlist (reorder, add, remove tracks)
+await sdk.playlists.updatePlaylistItems(playlistId, { uris: trackUris })
+```
+
+Key differences from legacy `spotify-web-api-js`:
+- All methods are async (no callback-based APIs)
+- Response types include full Spotify API object structure
+- Paginated results use `.items` array pattern
+- Track URIs in format `spotify:track:{id}` for mutations
 
 ## Sort Rules System
 

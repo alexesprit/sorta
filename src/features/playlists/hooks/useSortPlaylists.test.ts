@@ -1,3 +1,9 @@
+import type {
+  PlaylistedTrack,
+  SimplifiedAlbum,
+  SimplifiedPlaylist,
+  Track,
+} from '@spotify/web-api-ts-sdk'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { useSortPlaylists } from '@/features/playlists/hooks/useSortPlaylists'
 import type { SortRule } from '@/features/sorting/utils/sortRules'
@@ -29,7 +35,7 @@ describe('useSortPlaylists', () => {
     ['album', 'desc'],
   ]
 
-  const mockSpotifyPlaylists: SpotifyApi.PlaylistObjectSimplified[] = [
+  const mockSpotifyPlaylists: SimplifiedPlaylist[] = [
     {
       id: '1',
       name: 'My Playlist 1',
@@ -51,6 +57,8 @@ describe('useSortPlaylists', () => {
       images: [],
       type: 'playlist',
       uri: 'spotify:playlist:1',
+      followers: { href: null, total: 0 },
+      primary_color: '',
     },
     {
       id: '2',
@@ -73,6 +81,8 @@ describe('useSortPlaylists', () => {
       images: [],
       type: 'playlist',
       uri: 'spotify:playlist:2',
+      followers: { href: null, total: 0 },
+      primary_color: '',
     },
     {
       id: '3',
@@ -95,10 +105,12 @@ describe('useSortPlaylists', () => {
       images: [],
       type: 'playlist',
       uri: 'spotify:playlist:3',
+      followers: { href: null, total: 0 },
+      primary_color: '',
     },
   ]
 
-  const mockTrack = (id: string): SpotifyApi.PlaylistTrackObject => ({
+  const mockTrack = (id: string): PlaylistedTrack<Track> => ({
     added_at: '2023-01-01',
     added_by: {
       id: 'user123',
@@ -108,6 +120,7 @@ describe('useSortPlaylists', () => {
       type: 'user',
     },
     is_local: false,
+    primary_color: '',
     track: {
       id,
       name: `Track ${id}`,
@@ -124,16 +137,31 @@ describe('useSortPlaylists', () => {
       album: {
         id: 'album1',
         name: 'Album',
+        release_date: '2023-01-01',
+        release_date_precision: 'day',
+        total_tracks: 10,
+        artists: [
+          {
+            name: 'Artist',
+            id: 'artist1',
+            uri: '',
+            href: '',
+            external_urls: { spotify: '' },
+            type: 'artist',
+          },
+        ],
         images: [],
         uri: '',
         href: '',
         external_urls: { spotify: '' },
         type: 'album',
         album_type: 'album',
-      },
+        album_group: 'album',
+        available_markets: [],
+      } as unknown as SimplifiedAlbum,
       duration_ms: 180000,
       explicit: false,
-      external_ids: { isrc: 'test-isrc' },
+      external_ids: { isrc: 'test-isrc', upc: '', ean: '' },
       uri: `spotify:track:${id}`,
       href: '',
       external_urls: { spotify: '' },
@@ -144,7 +172,7 @@ describe('useSortPlaylists', () => {
       preview_url: '',
       available_markets: [],
       is_playable: true,
-    },
+    } as unknown as Track,
   })
 
   beforeEach(() => {
@@ -775,13 +803,13 @@ describe('useSortPlaylists', () => {
           ...mockSpotifyPlaylists[0],
           tracks: { total: 0, href: '' },
           collaborative: false,
-          description: null,
+          description: '',
           external_urls: { spotify: 'https://open.spotify.com/playlist/test' },
           href: 'https://open.spotify.com/playlist/test',
           id: 'test-playlist-id',
           images: [],
           name: 'Test Playlist',
-        } as SpotifyApi.PlaylistObjectSimplified,
+        } as SimplifiedPlaylist,
       ]
 
       vi.mocked(getMyPlaylists).mockResolvedValue(playlistsWithZeroTracks)

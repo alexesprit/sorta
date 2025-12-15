@@ -1,4 +1,5 @@
 /.vscode
+/ai-local/
 /dist
 /node_modules
 

@@ -1,3 +1,4 @@
+import type { PlaylistedTrack, TrackItem } from '@spotify/web-api-ts-sdk'
 import type { SortKey, SortRule } from '@/features/sorting/utils/sortRules'
 import {
   getAlbumName,
@@ -8,7 +9,7 @@ import {
   getTrackTitle,
 } from '@/features/sorting/utils/trackTypeGuards'
 
-type PlaylistTrack = SpotifyApi.PlaylistTrackObject
+type PlaylistTrack = PlaylistedTrack<TrackItem>
 
 type CompareFunction = (trackA: PlaylistTrack, trackB: PlaylistTrack) => number
 

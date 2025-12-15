@@ -1,6 +1,6 @@
 import { ListFilter } from 'lucide-react'
 import * as m from '@/paraglide/messages'
-import { authorize } from '@/shared/api/spotify'
+import { authenticate } from '@/shared/api/spotifyClient'
 import { Button } from '@/shared/components/ui/button'
 
 export function IntroScreen(): JSX.Element {
@@ -18,7 +18,7 @@ export function IntroScreen(): JSX.Element {
         </div>
 
         <Button
-          onClick={() => authorize()}
+          onClick={() => authenticate()}
           className="bg-spotify hover:bg-spotify-hover text-black font-bold text-base px-8 py-3 h-12 rounded-lg shadow-lg shadow-green-900/20 transition-all active:scale-[0.98]"
         >
           {m.sign_in_to_spotify()}
