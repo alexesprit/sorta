@@ -106,7 +106,7 @@ function SortableRuleItem({
           <button
             type="button"
             onClick={() => onRemove(index)}
-            className="p-1.5 rounded-md hover:bg-red-500/10 hover:text-red-500 text-zinc-500 transition-colors"
+            className="p-1.5 rounded-md hover:bg-red-500/10 hover:text-red-500 text-zinc-500 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
