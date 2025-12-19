@@ -1,6 +1,6 @@
 {
   "$schema": "https://inlang.com/schema/inlang-message-format",
-  "loading": "Loading...",
+  "loading": "Loading…",
   "authentication_error": "Authentication error:",
   "try_again": "Try again",
   "app_name": "Sorta",
@@ -10,15 +10,15 @@
   "your_playlists": "Your Playlists",
   "selected": "selected",
   "filter_playlists": "Filter playlists",
-  "filter_playlists_placeholder": "Filter playlists...",
+  "filter_playlists_placeholder": "Filter playlists…",
   "select_all": "Select All",
   "no_playlists_match_search": "No playlists match your search",
   "try_adjusting_search_terms": "Try adjusting your search terms",
   "no_playlists_loaded": "No playlists loaded",
   "connect_spotify_account": "Connect your Spotify account to get started",
-  "sorting": "Sorting...",
-  "loading_progress": "Loading {current}/{total}...",
-  "saving_progress": "Saving {current}/{total}...",
+  "sorting": "Sorting…",
+  "loading_progress": "Loading {current}/{total}…",
+  "saving_progress": "Saving {current}/{total}…",
   "sort_playlists": "Sort {count} Playlist{plural}",
   "track_count": "{count} track{plural}",
   "sorted": "Sorted",
@@ -54,5 +54,5 @@
   "avoid_album_siblings": "Avoid Album Siblings",
   "dont_play_same_album": "Don't play the same album twice in a row",
   "shuffle_playlists": "Shuffle {count} Playlist{plural}",
-  "processing": "Processing..."
+  "processing": "Processing…"
 }

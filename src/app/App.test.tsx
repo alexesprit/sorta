@@ -58,10 +58,10 @@ describe('App', () => {
       const result = render(<App />)
       const loadingText = result.container.textContent
 
-      // The component should either show "Loading..." or have already
+      // The component should either show "Loading…" or have already
       // transitioned to IntroScreen depending on timing
       expect(
-        loadingText?.includes('Loading...') ||
+        loadingText?.includes('Loading…') ||
           loadingText?.includes('IntroScreen'),
       ).toBe(true)
     })
@@ -72,7 +72,7 @@ describe('App', () => {
       })
 
       await waitFor(() => {
-        expect(screen.queryByText('Loading...')).not.toBeInTheDocument()
+        expect(screen.queryByText('Loading…')).not.toBeInTheDocument()
       })
     })
   })
