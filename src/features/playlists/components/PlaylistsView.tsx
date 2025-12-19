@@ -142,9 +142,11 @@ export function PlaylistsView({
       {playlists.length > 0 && (
         <div className="p-4 border-t border-zinc-800 bg-zinc-900/50 shrink-0">
           <Button
+            variant="spotify"
+            size="xl"
             disabled={isProcessing || !canSortPlaylists}
             onClick={onSortPlaylists}
-            className="w-full h-11 bg-spotify hover:bg-spotify-hover text-black font-bold rounded-md shadow-lg shadow-green-900/20"
+            className="w-full"
           >
             {isProcessing ? (
               <>

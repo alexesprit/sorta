@@ -17,10 +17,7 @@ export function IntroScreen(): JSX.Element {
           <p className="text-xl text-zinc-300">{m.app_description()}</p>
         </div>
 
-        <Button
-          onClick={() => authenticate()}
-          className="bg-spotify hover:bg-spotify-hover text-black font-bold text-base px-8 py-3 h-12 rounded-lg shadow-lg shadow-green-900/20 transition-all active:scale-[0.98]"
-        >
+        <Button variant="spotify" size="xl" onClick={() => authenticate()}>
           {m.sign_in_to_spotify()}
         </Button>
       </div>
