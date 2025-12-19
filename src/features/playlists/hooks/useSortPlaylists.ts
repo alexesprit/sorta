@@ -7,6 +7,7 @@ import {
 } from 'react'
 import type {
   Playlist,
+  PlaylistProgress,
   PlaylistStatus,
 } from '@/features/playlists/models/Playlist'
 import type { ShuffleConfig, SortMode } from '@/features/shuffle/types'
@@ -27,10 +28,23 @@ function updatePlaylistStatus(
   playlists: Playlist[],
   playlistId: string,
   status: PlaylistStatus,
+  progress?: PlaylistProgress,
+  clearProgress = false,
 ): Playlist[] {
-  return playlists.map((playlist) =>
-    playlist.id === playlistId ? { ...playlist, status } : playlist,
-  )
+  return playlists.map((playlist) => {
+    if (playlist.id !== playlistId) {
+      return playlist
+    }
+
+    if (clearProgress) {
+      const { progress: _, ...rest } = playlist
+      return { ...rest, status }
+    }
+
+    return progress
+      ? { ...playlist, status, progress }
+      : { ...playlist, status }
+  })
 }
 
 /**
@@ -48,8 +62,15 @@ async function processSinglePlaylist(
   sortRules: SortRule[],
   mode: SortMode,
   shuffleConfig: ShuffleConfig,
+  onProgress?: (progress: PlaylistProgress) => void,
 ): Promise<PlaylistStatus> {
-  const tracks = await getPlaylistTracks(playlistId)
+  const tracks = await getPlaylistTracks(playlistId, (loadProgress) => {
+    onProgress?.({
+      phase: 'loading',
+      current: loadProgress.loaded,
+      total: loadProgress.total,
+    })
+  })
   let areTracksSorted = false
 
   if (mode === 'sort') {
@@ -75,7 +96,13 @@ async function processSinglePlaylist(
   }
 
   try {
-    await setPlaylistTracks(playlistId, tracks)
+    await setPlaylistTracks(playlistId, tracks, (saveProgress) => {
+      onProgress?.({
+        phase: 'saving',
+        current: saveProgress.saved,
+        total: saveProgress.total,
+      })
+    })
     return mode === 'sort' ? 'sorted' : 'shuffled'
   } catch (_e) {
     return 'error'
@@ -126,18 +153,25 @@ export function useSortPlaylists(
         )
       })
 
-      // Process the playlist
+      // Process the playlist with progress callback
       const finalStatus = await processSinglePlaylist(
         playlistId,
         sortRules,
         mode,
         shuffleConfig,
+        (progress) => {
+          startTransition(() => {
+            setPlaylists((prev) =>
+              updatePlaylistStatus(prev, playlistId, 'sorting', progress),
+            )
+          })
+        },
       )
 
-      // Set final status after processing
+      // Set final status after processing (clear progress)
       startTransition(() => {
         setPlaylists((prev) =>
-          updatePlaylistStatus(prev, playlistId, finalStatus),
+          updatePlaylistStatus(prev, playlistId, finalStatus, undefined, true),
         )
       })
     }

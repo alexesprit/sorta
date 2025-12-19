@@ -17,6 +17,8 @@
   "no_playlists_loaded": "No se cargaron listas de reproducción",
   "connect_spotify_account": "Conecta tu cuenta de Spotify para comenzar",
   "sorting": "Ordenando...",
+  "loading_progress": "Cargando {current}/{total}...",
+  "saving_progress": "Guardando {current}/{total}...",
   "sort_playlists": "Ordenar {count} Lista{plural} de Reproducción",
   "track_count": "{count} pista{plural}",
   "sorted": "Ordenada",

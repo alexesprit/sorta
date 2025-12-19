@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import type {
   Playlist,
+  PlaylistProgress,
   PlaylistStatus,
 } from '@/features/playlists/models/Playlist'
 import type { SortMode } from '@/features/shuffle/types'
@@ -75,7 +76,7 @@ export function PlaylistItem({
         </div>
       </div>
       <div className="flex items-center">
-        {getStatusIndicator(playlist.status, mode)}
+        {getStatusIndicator(playlist.status, mode, playlist.progress)}
       </div>
     </button>
   )
@@ -84,6 +85,7 @@ export function PlaylistItem({
 function getStatusIndicator(
   status: PlaylistStatus,
   mode: SortMode,
+  progress?: PlaylistProgress,
 ): JSX.Element | null {
   switch (status) {
     case 'sorting':
@@ -91,7 +93,19 @@ function getStatusIndicator(
         <div className="flex items-center gap-2">
           <Loader2 className="w-4 h-4 animate-spin text-spotify" />
           <span className="text-xs text-zinc-400 hidden sm:inline">
-            {mode === 'sort' ? m.sorting() : m.processing()}
+            {progress
+              ? progress.phase === 'loading'
+                ? m.loading_progress({
+                    current: progress.current,
+                    total: progress.total,
+                  })
+                : m.saving_progress({
+                    current: progress.current,
+                    total: progress.total,
+                  })
+              : mode === 'sort'
+                ? m.sorting()
+                : m.processing()}
           </span>
         </div>
       )

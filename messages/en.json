@@ -17,6 +17,8 @@
   "no_playlists_loaded": "No playlists loaded",
   "connect_spotify_account": "Connect your Spotify account to get started",
   "sorting": "Sorting...",
+  "loading_progress": "Loading {current}/{total}...",
+  "saving_progress": "Saving {current}/{total}...",
   "sort_playlists": "Sort {count} Playlist{plural}",
   "track_count": "{count} track{plural}",
   "sorted": "Sorted",

@@ -448,7 +448,7 @@ describe('useSortPlaylists', () => {
 
       // Only the selected playlist should have been processed
       expect(getPlaylistTracks).toHaveBeenCalledTimes(1)
-      expect(getPlaylistTracks).toHaveBeenCalledWith('1')
+      expect(getPlaylistTracks).toHaveBeenCalledWith('1', expect.any(Function))
     })
 
     test('should update playlist status to sorting then unchanged when tracks are not sorted', async () => {
@@ -553,8 +553,8 @@ describe('useSortPlaylists', () => {
       })
 
       expect(getPlaylistTracks).toHaveBeenCalledTimes(2)
-      expect(getPlaylistTracks).toHaveBeenCalledWith('1')
-      expect(getPlaylistTracks).toHaveBeenCalledWith('2')
+      expect(getPlaylistTracks).toHaveBeenCalledWith('1', expect.any(Function))
+      expect(getPlaylistTracks).toHaveBeenCalledWith('2', expect.any(Function))
       expect(setPlaylistTracks).toHaveBeenCalledTimes(2)
 
       const [playlists] = result.current

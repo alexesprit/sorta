@@ -16,8 +16,16 @@ export async function getMyPlaylists(): Promise<SimplifiedPlaylist[]> {
   return response.items
 }
 
+interface PlaylistTracksProgress {
+  loaded: number
+  total: number
+}
+
+type PlaylistTracksProgressCallback = (progress: PlaylistTracksProgress) => void
+
 export async function getPlaylistTracks(
   playlistId: string,
+  onProgress?: PlaylistTracksProgressCallback,
 ): Promise<PlaylistedTrack[]> {
   const tracks: PlaylistedTrack[] = []
 
@@ -32,6 +40,7 @@ export async function getPlaylistTracks(
   )
 
   tracks.push(...response.items)
+  onProgress?.({ loaded: tracks.length, total: response.total })
 
   while (response.next) {
     offset += limit
@@ -43,14 +52,25 @@ export async function getPlaylistTracks(
       offset,
     )
     tracks.push(...response.items)
+    onProgress?.({ loaded: tracks.length, total: response.total })
   }
 
   return tracks
 }
 
+interface PlaylistTracksSaveProgress {
+  saved: number
+  total: number
+}
+
+type PlaylistTracksSaveProgressCallback = (
+  progress: PlaylistTracksSaveProgress,
+) => void
+
 export async function setPlaylistTracks(
   playlistId: string,
   tracks: PlaylistedTrack[],
+  onProgress?: PlaylistTracksSaveProgressCallback,
 ): Promise<void> {
   const trackIds = tracks.map((track) => `spotify:track:${track.track.id}`)
 
@@ -72,6 +92,9 @@ export async function setPlaylistTracks(
     } else {
       await spotifyClient.playlists.addItemsToPlaylist(playlistId, tracksSlice)
     }
+
+    const saved = Math.min(offset + maxTracksToSave, trackIds.length)
+    onProgress?.({ saved, total: trackIds.length })
   }
 }
 
