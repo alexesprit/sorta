@@ -1,4 +1,3 @@
-import type { AccessToken } from '@spotify/web-api-ts-sdk'
 import { SpotifyApi } from '@spotify/web-api-ts-sdk'
 
 // biome-ignore lint/complexity/useLiteralKeys: TypeScript requires bracket notation for index signatures
@@ -12,37 +11,14 @@ const scopes = [
   'playlist-modify-public',
 ]
 
-// Storage keys for tokens
-const TOKEN_STORAGE_KEY = 'spotify_sdk:AuthorizationCodeWithPKCEStrategy:token'
-
-// Check if we have stored tokens
-function getStoredToken(): AccessToken | null {
-  try {
-    const stored = localStorage.getItem(TOKEN_STORAGE_KEY)
-    if (stored) {
-      return JSON.parse(stored) as AccessToken
-    }
-  } catch {
-    // Ignore parse errors
-  }
-  return null
-}
-
-// Initialize SDK with access token if we have one, otherwise create unauthenticated instance
-const storedToken = getStoredToken()
-export let spotifyClient: SpotifyApi
-
-if (storedToken) {
-  // We have a stored token - use it
-  spotifyClient = SpotifyApi.withAccessToken(clientId, storedToken)
-} else {
-  // No stored token - create SDK with user authorization (will be used for login)
-  spotifyClient = SpotifyApi.withUserAuthorization(
-    clientId,
-    redirectUri,
-    scopes,
-  )
-}
+// Initialize SDK with user authorization
+// This enables automatic token refresh when access token expires
+// The SDK manages token storage in localStorage automatically
+export const spotifyClient: SpotifyApi = SpotifyApi.withUserAuthorization(
+  clientId,
+  redirectUri,
+  scopes,
+)
 
 /**
  * Check if user is authenticated
@@ -59,26 +35,17 @@ export async function isAuthenticated(): Promise<boolean> {
 
 /**
  * Trigger authentication flow
- * Redirects to Spotify login using PKCE
+ * Redirects to Spotify login using PKCE or completes OAuth callback
  */
 export async function authenticate(): Promise<void> {
-  // If we don't have an authenticating client, create one
-  if (!(await isAuthenticated())) {
-    spotifyClient = SpotifyApi.withUserAuthorization(
-      clientId,
-      redirectUri,
-      scopes,
-    )
-  }
   await spotifyClient.authenticate()
 }
 
 /**
  * Logout and clear all authentication data
- * Clears SDK's stored tokens and reloads the page
+ * SDK's logOut() clears stored tokens automatically
  */
 export function logout(): void {
-  localStorage.removeItem(TOKEN_STORAGE_KEY)
   spotifyClient.logOut()
   window.location.reload()
 }
