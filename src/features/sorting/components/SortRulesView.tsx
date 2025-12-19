@@ -86,7 +86,7 @@ export function SortRulesView({
         <button
           type="button"
           onClick={() => onModeChange('sort')}
-          className={`py-2 text-sm font-medium rounded-md transition-all ${
+          className={`py-2 text-sm font-medium rounded-md transition-all cursor-pointer ${
             mode === 'sort'
               ? 'bg-zinc-800 text-zinc-50 shadow-sm'
               : 'text-zinc-400 hover:text-zinc-200'
@@ -97,7 +97,7 @@ export function SortRulesView({
         <button
           type="button"
           onClick={() => onModeChange('shuffle')}
-          className={`py-2 text-sm font-medium rounded-md transition-all ${
+          className={`py-2 text-sm font-medium rounded-md transition-all cursor-pointer ${
             mode === 'shuffle'
               ? 'bg-zinc-800 text-zinc-50 shadow-sm'
               : 'text-zinc-400 hover:text-zinc-200'
